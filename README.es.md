@@ -76,89 +76,15 @@ que no puede reconstruirse a partir de los demás.
 
 ### Monedas
 
-Cada sidecar guarda su coste en la moneda que facturó el proveedor (`"currency": "USD"`),
-y ese valor nunca se reescribe. La cabecera tiene un selector de **moneda de
-visualización**: euro (por defecto), dólar estadounidense o libra esterlina. Todos los
-importes del muro, del lightbox y de la página Gastos se convierten a ella al
-renderizar, y el lightbox muestra además el importe facturado original.
-
-- Los tipos de cambio están escritos en `RATES_TO_EUR`, en
-  [src/lib/currency.ts](src/lib/currency.ts), porque la herramienta no hace llamadas de
-  red. Se quedan desfasados: actualízalos de vez en cuando.
-- El euro es la moneda pivote. Totales, medias, porcentajes y ordenaciones se calculan en
-  euros, y solo se convierten a la moneda de visualización al formatear. Como la
-  conversión es lineal, convertir un total da lo mismo que sumar importes convertidos:
-  cambiar de moneda no requiere recalcular nada.
-- Una moneda facturada que no está en la tabla nunca se adivina. El importe se muestra en
-  su propia moneda, señalado, y queda fuera de los totales.
-- **Para ofrecer otra moneda de visualización**, añade su código a `DISPLAY_CURRENCIES`.
-  El tipo de `RATES_TO_EUR` hace fallar `npm run check` hasta que añadas su tipo de cambio.
+Los costes se guardan en la moneda que facturó el proveedor. La cabecera permite mostrar
+todos los importes en euros, dólares estadounidenses o libras esterlinas, convertidos
+con tipos de cambio fijos.
 
 ## Idiomas
 
-La interfaz está disponible en **inglés, francés y español**. En la cabecera de cada página
-hay un selector de idioma.
-
-- **Qué se traduce:** la propia interfaz (etiquetas, botones, estados vacíos, mensajes de
-  error), además del formato de fechas, números y porcentajes. La moneda es un ajuste
-  aparte (ver más arriba): cambiar de idioma nunca la modifica.
-- **Qué no se traduce nunca:** todo lo que viene de un sidecar. Prompts, notas, etiquetas,
-  nombres de modelos y proveedores, nombres de archivo y metadatos personalizados se
-  muestran tal como se escribieron.
-- **Qué idioma se usa:** el último elegido en la cabecera (guardado en el `localStorage`
-  del navegador); si no hay ninguno, el primer idioma del navegador que la aplicación
-  admita; si no, el inglés. El idioma se decide antes del primer renderizado, así que la
-  página nunca aparece un instante en el idioma equivocado.
-- **Los mensajes del servidor** (avisos de lectura, errores de bajo nivel) son
-  diagnósticos para desarrolladores y se quedan en inglés. Los errores que un usuario
-  puede encontrarse de verdad, como un borrado fallido, llevan un `code` que el cliente
-  traduce.
-
-Las traducciones están en [src/lib/i18n/](src/lib/i18n/). No hay ninguna librería de
-i18n: cada idioma es un simple objeto TypeScript.
-
-```
-src/lib/i18n/
-  en.ts             ← diccionario de referencia; su tipo es el contrato (Messages)
-  fr.ts, es.ts      ← tipados como Messages
-  index.svelte.ts   ← lista LOCALES + el store reactivo `i18n`
-  plural.ts         ← ayuda para plurales, basada en Intl.PluralRules
-```
-
-Los componentes leen sus textos en `i18n.m`, por ejemplo `i18n.m.bar.filters`. `m` se
-deriva del idioma actual, así que al cambiar de idioma todo se vuelve a renderizar sin
-recargar.
-
-### Añadir un texto
-
-1. Añádelo a [`en.ts`](src/lib/i18n/en.ts). Este archivo define el tipo `Messages`.
-2. Añádelo a todos los demás diccionarios. Mientras no lo hagas, `npm run check` falla e
-   indica la clave que falta.
-3. Léelo en un componente a través de `i18n.m`.
-
-Unas pocas convenciones mantienen las traducciones seguras y comprobadas por el
-compilador:
-
-- **Todo texto que depende de un valor es una función**, como
-  `since: (date: string) => ...`. Así el compilador comprueba los parámetros en todos los
-  idiomas.
-- **Los plurales usan `plural()`**, definido en [`plural.ts`](src/lib/i18n/plural.ts),
-  nunca `n > 1`. Los idiomas no coinciden: el francés trata el 0 como singular, el inglés
-  y el español como plural.
-- **El código en línea va entre acentos graves**, por ejemplo
-  ``'Deja tus archivos en `generations/`'``. El componente `Rich` convierte esos
-  fragmentos en `<code>`. Nunca pongas HTML en una traducción.
-
-### Añadir un idioma
-
-1. Copia `src/lib/i18n/en.ts` a `src/lib/i18n/<código>.ts`, tipa la exportación como
-   `Messages` y traduce los valores.
-2. Regístralo en `LOCALES`, en [`index.svelte.ts`](src/lib/i18n/index.svelte.ts), con su
-   nombre escrito en ese idioma (`Deutsch`, no `Alemán`).
-3. Ejecuta `npm run check`. Una clave que falta, una clave de más o un parámetro con el
-   tipo equivocado hacen fallar la comprobación.
-4. Traduce también este README, como `README.<código>.md`, y añádelo a los enlaces del
-   principio de cada README.
+La interfaz está disponible en inglés, francés y español; el idioma se elige en la
+cabecera. Solo se traduce la interfaz: los prompts, las notas, las etiquetas y todo lo
+que viene de un sidecar se muestran tal como se escribieron.
 
 ## Skills
 
@@ -177,8 +103,7 @@ generación por ti:
 - **Añadir un proveedor:** escribe una skill en `.claude/skills/` que termine guardando el
   medio y su sidecar en `generations/`. El muro no necesita ningún cambio.
 - **Cambiar la interfaz:** es SvelteKit con las runes de Svelte 5. [CLAUDE.md](CLAUDE.md)
-  indica el papel de cada archivo. Todo texto visible pasa por los diccionarios de
-  [src/lib/i18n/](src/lib/i18n/), nunca escrito directamente en un componente.
+  indica el papel de cada archivo.
 - **Mantenerlo local:** ninguna dependencia de runtime aparte de SvelteKit, y ninguna
   llamada de red saliente. Los tipos de cambio están fijados en
   [src/lib/currency.ts](src/lib/currency.ts): actualízalos de vez en cuando.

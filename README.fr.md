@@ -76,88 +76,15 @@ qu'aucun autre ne permet de reconstruire.
 
 ### Devises
 
-Chaque sidecar enregistre son coût dans la devise facturée par le fournisseur
-(`"currency": "USD"`), et cette valeur n'est jamais réécrite. L'en-tête propose un
-sélecteur de **devise d'affichage** : euro (par défaut), dollar américain ou livre
-sterling. Tous les montants du mur, du lightbox et de la page Dépenses y sont convertis
-au rendu, et le lightbox rappelle aussi le montant facturé d'origine.
-
-- Les taux sont écrits en dur dans `RATES_TO_EUR`, dans
-  [src/lib/currency.ts](src/lib/currency.ts), car l'outil ne fait aucun appel réseau. Ils
-  vieillissent : mettez-les à jour de temps en temps.
-- L'euro sert de devise pivot. Totaux, moyennes, parts et tris sont calculés en euros, et
-  convertis vers la devise d'affichage seulement au formatage. La conversion étant
-  linéaire, convertir un total revient à totaliser des montants convertis : changer de
-  devise ne demande aucun recalcul.
-- Une devise facturée absente de la table n'est jamais devinée. Le montant est affiché
-  dans sa propre devise, signalé, et exclu des totaux.
-- **Pour proposer une autre devise d'affichage**, ajoutez son code à `DISPLAY_CURRENCIES`.
-  Le type de `RATES_TO_EUR` fait alors échouer `npm run check` tant que son taux manque.
+Les coûts sont enregistrés dans la devise facturée par le fournisseur. L'en-tête permet
+d'afficher tous les montants en euros, en dollars américains ou en livres sterling,
+convertis avec des taux fixes.
 
 ## Langues
 
-L'interface est disponible en **anglais, français et espagnol**. Un sélecteur de langue se
-trouve dans l'en-tête de chaque page.
-
-- **Ce qui est traduit :** l'interface elle-même (libellés, boutons, états vides, messages
-  d'erreur), ainsi que le format des dates, des nombres et des pourcentages. La devise est
-  un réglage séparé (voir plus haut) : changer de langue ne la modifie jamais.
-- **Ce qui n'est jamais traduit :** tout ce qui vient d'un sidecar. Prompts, notes, tags,
-  noms de modèles et de fournisseurs, noms de fichiers et métadonnées personnalisées
-  s'affichent tels qu'ils ont été écrits.
-- **Quelle langue est utilisée :** la dernière choisie dans l'en-tête (mémorisée dans le
-  `localStorage` du navigateur), sinon la première langue du navigateur prise en charge,
-  sinon l'anglais. La langue est déterminée avant le premier rendu : la page n'affiche
-  jamais un instant la mauvaise langue.
-- **Les messages du serveur** (avertissements de lecture, erreurs bas niveau) sont des
-  diagnostics destinés aux développeurs et restent en anglais. Les erreurs qu'un
-  utilisateur peut réellement rencontrer, comme un échec de suppression, portent un
-  `code` que le client traduit.
-
-Les traductions se trouvent dans [src/lib/i18n/](src/lib/i18n/). Il n'y a aucune
-bibliothèque d'i18n : chaque langue est un simple objet TypeScript.
-
-```
-src/lib/i18n/
-  en.ts             ← dictionnaire de référence ; son type est le contrat (Messages)
-  fr.ts, es.ts      ← typés Messages
-  index.svelte.ts   ← liste LOCALES + le store réactif `i18n`
-  plural.ts         ← aide aux pluriels, construite sur Intl.PluralRules
-```
-
-Les composants lisent leurs textes dans `i18n.m`, par exemple `i18n.m.bar.filters`. `m`
-est dérivé de la langue courante : en changer réaffiche tout, sans rechargement.
-
-### Ajouter un texte
-
-1. Ajoutez-le à [`en.ts`](src/lib/i18n/en.ts). C'est ce fichier qui définit le type
-   `Messages`.
-2. Ajoutez-le à tous les autres dictionnaires. Tant que ce n'est pas fait,
-   `npm run check` échoue et nomme la clé manquante.
-3. Lisez-le dans un composant via `i18n.m`.
-
-Quelques conventions gardent les traductions sûres et vérifiées par le compilateur :
-
-- **Tout texte qui dépend d'une valeur est une fonction**, comme
-  `since: (date: string) => ...`. Le compilateur vérifie alors les paramètres dans chaque
-  langue.
-- **Les pluriels passent par `plural()`**, défini dans [`plural.ts`](src/lib/i18n/plural.ts),
-  jamais par `n > 1`. Les langues divergent : le français met 0 au singulier, l'anglais et
-  l'espagnol au pluriel.
-- **Le code en ligne s'écrit entre accents graves**, par exemple
-  ``'Déposez vos fichiers dans `generations/`'``. Le composant `Rich` rend ces segments en
-  `<code>`. Jamais de HTML dans une traduction.
-
-### Ajouter une langue
-
-1. Copiez `src/lib/i18n/en.ts` vers `src/lib/i18n/<code>.ts`, typez l'export `Messages`
-   et traduisez les valeurs.
-2. Déclarez-la dans `LOCALES`, dans [`index.svelte.ts`](src/lib/i18n/index.svelte.ts),
-   avec son nom écrit dans sa propre langue (`Deutsch`, pas `Allemand`).
-3. Lancez `npm run check`. Une clé manquante, une clé en trop ou un paramètre mal typé
-   fait échouer la vérification.
-4. Traduisez aussi ce README, sous le nom `README.<code>.md`, et ajoutez-le aux liens en
-   tête de chaque README.
+L'interface est disponible en anglais, en français et en espagnol ; la langue se choisit
+dans l'en-tête. Seule l'interface est traduite : prompts, notes, tags et tout ce qui vient
+d'un sidecar s'affichent tels qu'ils ont été écrits.
 
 ## Skills
 
@@ -178,8 +105,7 @@ Les skills Claude Code de [.claude/skills/](.claude/skills/) s'occupent de la g�
   enregistrant le média et son sidecar dans `generations/`. Le mur n'a besoin d'aucune
   modification.
 - **Modifier l'interface :** c'est du SvelteKit avec les runes de Svelte 5.
-  [CLAUDE.md](CLAUDE.md) associe chaque fichier à son rôle. Tout texte visible passe par
-  les dictionnaires de [src/lib/i18n/](src/lib/i18n/), jamais en dur dans un composant.
+  [CLAUDE.md](CLAUDE.md) associe chaque fichier à son rôle.
 - **Rester local :** aucune dépendance runtime hors SvelteKit, et aucun appel réseau
   sortant. Les taux de change sont figés dans [src/lib/currency.ts](src/lib/currency.ts) :
   mettez-les à jour de temps en temps.

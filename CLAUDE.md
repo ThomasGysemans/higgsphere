@@ -127,7 +127,8 @@ correspondant dans `currency` — le plus souvent `USD`. Ne convertissez rien à
 sidecar garde la donnée d'origine, et le mur se charge de l'affichage.
 
 **Le mur affiche tous les montants dans la devise choisie par l'utilisateur** — euro,
-dollar américain ou livre sterling, via le sélecteur de l'en-tête ; l'euro par défaut. La
+dollar américain ou livre sterling, via le sélecteur de l'en-tête ; l'euro par défaut, et
+le choix est mémorisé (`localStorage`, clé `higgsphere.currency`). La
 conversion est faite à l'affichage seulement, à partir de la table de taux de
 [src/lib/currency.ts](src/lib/currency.ts). Ces taux sont **figés dans le code** — l'outil
 ne fait aucun appel réseau — donc ils dérivent avec le temps : relisez-les de temps en
@@ -234,6 +235,32 @@ c'est le fichier qui a disparu, pas le paiement — les cacher rendrait le total
 Les mêmes règles de devise qu'ailleurs s'appliquent : affichage dans la devise choisie, montants non
 convertibles exclus du total et signalés, générations sans `cost` comptées comme telles
 plutôt que comme des zéros.
+
+---
+
+## Langues de l'interface
+
+L'interface existe en anglais, français et espagnol ; le sélecteur est dans l'en-tête de
+chaque page ([Preferences.svelte](src/lib/components/Preferences.svelte)). Seule
+l'interface est traduite, jamais les données des sidecars (voir « Comportements à
+préserver »). Les règles d'écriture des textes sont dans « Conventions de code ».
+
+La langue est choisie dans cet ordre : le choix mémorisé (`localStorage`, clé
+`higgsphere.locale`), puis la première langue du navigateur prise en charge, puis
+l'anglais. Elle est résolue de façon synchrone au chargement du module, avant le premier
+rendu : la page ne s'affiche jamais un instant dans une autre langue. Il n'y a aucune
+bibliothèque d'i18n, conformément à la règle « aucune dépendance runtime ».
+
+Pour ajouter une langue :
+
+1. Copier [src/lib/i18n/en.ts](src/lib/i18n/en.ts) vers `src/lib/i18n/<code>.ts`, typer
+   l'export `Messages` et traduire les valeurs (en instanciant `pluralizer('<code>')`).
+2. L'ajouter à `LOCALES` dans [src/lib/i18n/index.svelte.ts](src/lib/i18n/index.svelte.ts),
+   avec son nom écrit dans sa propre langue (`Deutsch`, pas `German`).
+3. Lancer `npm run check` : une clé manquante, une clé en trop ou un paramètre mal typé
+   le fait échouer.
+4. Traduire le README en `README.<code>.md` et l'ajouter à la ligne de liens en tête de
+   chaque README.
 
 ---
 
