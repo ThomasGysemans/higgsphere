@@ -1,46 +1,39 @@
 # higgsphere
 
-Mur local qui rassemble **toutes les images et vidéos générées par IA** en un seul endroit :
-disposition masonry, la plus récente en haut, avec le prompt exact et les métadonnées de
-chaque génération.
+A local gallery for every image and video you generate with AI: newest first, each one next
+to the exact prompt, model and cost that produced it. This repo comes with Claude skills to
+optimise the generation process.
 
-- **Masonry en colonnes** — 4 colonnes, puis 3, 2 et 1 en réduisant la fenêtre. Chaque tuile
-  garde ses proportions : rien n'est rogné ni déformé.
-- **Vidéos au survol** — lecture silencieuse à l'entrée du pointeur, arrêt et retour à zéro
-  à la sortie. Les images restent statiques.
-- **Lightbox** — clic sur une tuile pour l'agrandir avec le prompt, le modèle, les
-  dimensions, le poids, le coût estimé, la date, la graine et les tags. Clic à l'extérieur
-  ou Échap pour fermer, ← / → pour naviguer.
-- **Recherche et filtres** — recherche plein texte (prompt, modèle, service, tags, nom de
-  fichier), avec phrases entre `"guillemets"` ; filtres par type, modèle, service et tag ;
-  tri par date, coût ou poids.
-- **Détection en direct** — déposez un fichier dans `generations/`, il apparaît dans la
-  seconde, sans rechargement.
-- **Suppression** — depuis le lightbox, après confirmation ; le média et son sidecar sont
-  supprimés définitivement du disque.
-- **Coûts en euros** — les sidecars gardent le montant dans la devise facturée (USD le plus
-  souvent), le mur convertit à l'affichage et montre le montant d'origine à côté. Les taux
-  sont figés dans [src/lib/currency.ts](src/lib/currency.ts), à ajuster de temps en temps.
+## Why
 
-## Démarrer
+AI media ends up scattered across provider dashboards, download folders and chat
+histories, and the prompt behind a result is usually lost. higgsphere keeps everything in
+one folder and shows it as a masonry wall you can search and filter.
+
+It is also built to be driven by an LLM. Instead of writing prompts by hand, you describe
+what you want to Claude Code (or another service like Claude Code). It writes a detailed prompt,
+calls the model, then saves the result together with its metadata.
+Because every prompt stays next to its output, you can compare results,
+keep the phrasings that work, and ask the LLM to improve the next attempt from what you already have.
+
+## Setup
+
+Requires Node.js 20.19+ (Vite 8).
 
 ```sh
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
 ```
 
-Puis ouvrez http://localhost:5173.
+To generate media from Claude Code, copy `.env.example` to `.env` and add your
+[Kie AI](https://kie.ai) key.
 
-Pour voir le mur peuplé immédiatement (nécessite `ffmpeg`) :
+## How it works
 
-```sh
-bash scripts/seed-demo.sh
-```
+### Results folder
 
-## Déposer des générations
-
-Tout se passe dans `generations/` : le média, plus un fichier `.json` du même nom qui porte
-le prompt et les métadonnées.
+The `generations/` folder is the wall's only data source. Every image or video is stored
+there, next to a `.json` file with the same name that records how it was made:
 
 ```
 generations/
@@ -54,28 +47,45 @@ generations/
   "model": "imagen-4-ultra",
   "service": "Google Vertex AI",
   "cost": 0.06,
-  "created_at": "2026-08-31T10:31:00Z",
-  "tags": ["space", "abstract"]
+  "created_at": "2026-08-31T10:31:00Z"
 }
 ```
 
-Le schéma complet, les alias tolérés et les conventions sont décrits dans
-[CLAUDE.md](CLAUDE.md).
+> The JSON files can include custom metadata that the LLM will set up.
 
-## Scripts
+New files show up on the wall within a second, with no reload or restart. Every field is
+optional, and subfolders are fine. The full schema is in [CLAUDE.md](CLAUDE.md), which
+Claude Code reads automatically, so it writes these files correctly without being told.
 
-| Commande | Rôle |
-| --- | --- |
-| `npm run dev` | Serveur de développement |
-| `npm run build` | Build de production (adapter-node) |
-| `npm run preview` | Sert le build |
-| `npm run check` | Vérification des types (svelte-check) |
+### The spend ledger
 
-Le dossier surveillé est `./generations` ; il peut être déplacé avec la variable
-d'environnement `GENERATIONS_DIR` (chemin absolu).
+`generations/.higgsphere-ledger.jsonl` records everything you have paid for. A generation
+is logged as soon as it appears in the folder, and the entry stays after the file is
+deleted, whether you delete it from the app or with `rm`. Deleting a media file removes a
+tile from the wall but doesn't lower the total spent. The **Dépenses** page (`/stats`)
+reads the ledger to show spending over time, by provider and by model.
 
-## Portée
+The ledger is append-only and committed to git. It's the one file in the folder that
+can't be rebuilt from the others.
 
-Outil strictement local : pas de SEO, pas d'analytics, aucun appel réseau sortant. Aucune
-dépendance runtime en dehors de SvelteKit — les parsers d'en-tête d'image et la disposition
-masonry sont écrits à la main.
+## Skills
+
+The Claude Code skills in [.claude/skills/](.claude/skills/) handle generation for you:
+
+- [`kie-ai`](.claude/skills/kie-ai/SKILL.md) turns a description into a detailed prompt,
+  generates images or videos through Kie AI (Kling, Veo, Seedream, Nano Banana…), and
+  saves the result and its `.json` file to `generations/`. It estimates the cost first and
+  spends nothing until you reply `kie ok <credits>`. A hook enforces this.
+- [`video-loop`](.claude/skills/video-loop/SKILL.md) turns a generated video into a
+  seamless loop. It runs locally with `ffmpeg`, so it costs nothing.
+
+## Improving it
+
+- **Add a provider:** write a skill in `.claude/skills/` that ends by saving the media and
+  its sidecar to `generations/`. The wall doesn't need any changes.
+- **Change the UI:** it's SvelteKit with Svelte 5 runes. [CLAUDE.md](CLAUDE.md) maps each
+  file to its role.
+- **Keep it local:** no runtime dependencies beyond SvelteKit, and no outbound network
+  calls. Currency rates are fixed in [src/lib/currency.ts](src/lib/currency.ts), so update
+  them from time to time.
+- Run `npm run check` before opening a PR.

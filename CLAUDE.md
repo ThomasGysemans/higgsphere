@@ -252,12 +252,6 @@ npm run preview  # sert le build
 Le dossier surveillé est `./generations` par défaut ; il peut être déplacé via la variable
 d'environnement `GENERATIONS_DIR` (chemin absolu).
 
-Pour remplir le mur avec un jeu de démonstration (nécessite `ffmpeg`) :
-
-```bash
-bash scripts/seed-demo.sh          # écrit dans ./generations
-```
-
 ---
 
 ## Architecture
