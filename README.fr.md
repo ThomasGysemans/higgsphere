@@ -59,8 +59,8 @@ generations/
 
 Les nouveaux fichiers apparaissent sur le mur en moins d'une seconde, sans rechargement ni
 redémarrage. Tous les champs sont optionnels, et les sous-dossiers sont acceptés. Le
-schéma complet est dans [CLAUDE.md](CLAUDE.md), que Claude Code lit automatiquement : il
-écrit donc ces fichiers correctement sans qu'on le lui dise.
+schéma complet est dans [AGENTS.md](AGENTS.md), que les agents de code lisent
+automatiquement : ils écrivent donc ces fichiers correctement sans qu'on le leur dise.
 
 ### Le journal des dépenses
 
@@ -88,39 +88,40 @@ d'un sidecar s'affichent tels qu'ils ont été écrits.
 
 ## Skills
 
-Les skills Claude Code de [.claude/skills/](.claude/skills/) s'occupent de la génération
-à votre place :
+Les skills de [.agents/skills/](.agents/skills/) s'occupent de la génération à votre
+place :
 
-- [`kie-ai`](.claude/skills/kie-ai/SKILL.md) transforme une description en prompt
+- [`kie-ai`](.agents/skills/kie-ai/SKILL.md) transforme une description en prompt
   détaillé, génère des images ou des vidéos via Kie AI (Kling, Veo, Seedream, Nano
   Banana…) et enregistre le résultat et son fichier `.json` dans `generations/`. Elle
   estime d'abord le coût et ne dépense rien tant que vous n'avez pas répondu
-  `kie ok <crédits>`. Un hook le garantit.
-- [`video-loop`](.claude/skills/video-loop/SKILL.md) transforme une vidéo générée en boucle
+  `kie ok <crédits>` pour fixer un budget.
+- [`video-loop`](.agents/skills/video-loop/SKILL.md) transforme une vidéo générée en boucle
   sans raccord. Elle tourne en local avec `ffmpeg` et ne coûte donc rien.
 
 ## Utiliser un autre LLM
 
 Le mur ne dépend pas de Claude : tout ce qui écrit un média et son `.json` dans
-`generations/` s'y affiche. Seule la configuration de l'agent est propre à Claude Code :
+`generations/` s'y affiche. La configuration de l'agent fonctionne telle quelle avec la
+plupart des agents de code :
 
-- **Instructions :** la plupart des autres agents lisent `AGENTS.md` au lieu de
-  `CLAUDE.md`. Créez un lien avec `ln -s CLAUDE.md AGENTS.md`, ou indiquez `CLAUDE.md` à
-  votre outil.
-- **Skills :** chacune est un fichier Markdown accompagné de scripts shell. Tout agent
-  capable de lancer des commandes peut les suivre : demandez-lui de lire le `SKILL.md`, ou
-  copiez le dossier là où votre outil cherche ses skills.
-- **Garde-fou des coûts :** `kie ok <crédits>` repose sur les hooks de Claude Code. Sans
-  eux, `kie-ai` refuse toute génération payante. Adaptez
-  [kie-guard.py](.claude/hooks/kie-guard.py) aux hooks de votre outil pour lever le blocage.
+- **Les instructions** sont dans [AGENTS.md](AGENTS.md), que Codex, Cursor, Copilot et
+  d'autres lisent directement. `CLAUDE.md` l'importe, et `.gemini/settings.json` y renvoie
+  Gemini CLI.
+- **Les skills** sont dans `.agents/skills/`, et `.claude/skills/` y renvoie pour Claude
+  Code. `AGENTS.md` les liste : un agent qui ne charge pas les skills tout seul sait quand
+  même quand les lire.
+- **Le budget :** `kie-ai` interdit toute génération payante tant que vous n'avez pas
+  fixé un budget avec `kie ok <crédits>`. C'est une règle écrite que l'agent suit, pas un
+  blocage technique.
 
 ## Contribuer
 
-- **Ajouter un fournisseur :** écrivez une skill dans `.claude/skills/` qui se termine en
+- **Ajouter un fournisseur :** écrivez une skill dans `.agents/skills/` qui se termine en
   enregistrant le média et son sidecar dans `generations/`. Le mur n'a besoin d'aucune
   modification.
 - **Modifier l'interface :** c'est du SvelteKit avec les runes de Svelte 5.
-  [CLAUDE.md](CLAUDE.md) associe chaque fichier à son rôle.
+  [AGENTS.md](AGENTS.md) associe chaque fichier à son rôle.
 - **Rester local :** aucune dépendance runtime hors SvelteKit, et aucun appel réseau
   sortant. Les taux de change sont figés dans [src/lib/currency.ts](src/lib/currency.ts) :
   mettez-les à jour de temps en temps.

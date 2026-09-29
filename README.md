@@ -56,8 +56,8 @@ generations/
 > The JSON files can include custom metadata that the LLM will set up.
 
 New files show up on the wall within a second, with no reload or restart. Every field is
-optional, and subfolders are fine. The full schema is in [CLAUDE.md](CLAUDE.md), which
-Claude Code reads automatically, so it writes these files correctly without being told.
+optional, and subfolders are fine. The full schema is in [AGENTS.md](AGENTS.md), which
+coding agents read automatically, so they write these files correctly without being told.
 
 ### The spend ledger
 
@@ -83,34 +83,33 @@ sidecar are shown as written.
 
 ## Skills
 
-The Claude Code skills in [.claude/skills/](.claude/skills/) handle generation for you:
+The skills in [.agents/skills/](.agents/skills/) handle generation for you:
 
-- [`kie-ai`](.claude/skills/kie-ai/SKILL.md) turns a description into a detailed prompt,
+- [`kie-ai`](.agents/skills/kie-ai/SKILL.md) turns a description into a detailed prompt,
   generates images or videos through Kie AI (Kling, Veo, Seedream, Nano Banana…), and
   saves the result and its `.json` file to `generations/`. It estimates the cost first and
-  spends nothing until you reply `kie ok <credits>`. A hook enforces this.
-- [`video-loop`](.claude/skills/video-loop/SKILL.md) turns a generated video into a
+  spends nothing until you set a budget by replying `kie ok <credits>`.
+- [`video-loop`](.agents/skills/video-loop/SKILL.md) turns a generated video into a
   seamless loop. It runs locally with `ffmpeg`, so it costs nothing.
 
 ## Using another LLM
 
 The wall doesn't depend on Claude: anything that writes a media file and its `.json` to
-`generations/` shows up. Only the agent setup is Claude Code-specific:
+`generations/` shows up. The agent setup works with most coding agents out of the box:
 
-- **Instructions:** most other agents read `AGENTS.md` instead of `CLAUDE.md`. Link it
-  with `ln -s CLAUDE.md AGENTS.md`, or point your tool at `CLAUDE.md`.
-- **Skills:** each one is a Markdown file plus shell scripts. Any agent that can run
-  commands can follow them: ask it to read the `SKILL.md`, or copy the folder to where your
-  tool looks for skills.
-- **Cost guard:** `kie ok <credits>` relies on Claude Code hooks. Without them, `kie-ai`
-  refuses every paid generation. Adapt [kie-guard.py](.claude/hooks/kie-guard.py) to your
-  tool's hooks to lift the block.
+- **Instructions** live in [AGENTS.md](AGENTS.md), which Codex, Cursor, Copilot and others
+  read directly. `CLAUDE.md` imports it, and `.gemini/settings.json` points Gemini CLI to it.
+- **Skills** live in `.agents/skills/`, and `.claude/skills/` links to it for Claude Code.
+  `AGENTS.md` lists them, so an agent that doesn't load skills on its own still knows when
+  to read them.
+- **Budget:** `kie-ai` forbids any paid generation until you set a budget with
+  `kie ok <credits>`. It's a written rule the agent follows, not a technical block.
 
 ## Improving it
 
-- **Add a provider:** write a skill in `.claude/skills/` that ends by saving the media and
+- **Add a provider:** write a skill in `.agents/skills/` that ends by saving the media and
   its sidecar to `generations/`. The wall doesn't need any changes.
-- **Change the UI:** it's SvelteKit with Svelte 5 runes. [CLAUDE.md](CLAUDE.md) maps each
+- **Change the UI:** it's SvelteKit with Svelte 5 runes. [AGENTS.md](AGENTS.md) maps each
   file to its role.
 - **Keep it local:** no runtime dependencies beyond SvelteKit, and no outbound network
   calls. Currency rates are fixed in [src/lib/currency.ts](src/lib/currency.ts), so update

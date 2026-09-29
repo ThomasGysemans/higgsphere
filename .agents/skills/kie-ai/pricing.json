@@ -1,0 +1,74 @@
+{
+  "usd_per_credit": 0.005,
+  "models": {
+    "kling-3.0-omni/text-to-video": {
+      "unit": "second",
+      "defaults": { "resolution": "720p", "duration": 5, "audio": true },
+      "shots": "multi_prompt",
+      "rates": [
+        { "when": { "resolution": "4k" }, "credits": 67 },
+        { "when": { "resolution": "1080p", "audio": true }, "credits": 23 },
+        { "when": { "resolution": "1080p", "audio": false }, "credits": 18 },
+        { "when": { "resolution": "720p", "audio": true }, "credits": 18 },
+        { "when": { "resolution": "720p", "audio": false }, "credits": 14 }
+      ],
+      "source": "https://kie.ai/kling-o3",
+      "checked": "2026-08-31",
+      "notes": "audio missing from the payload: default unknown, priced with audio (worst case)."
+    },
+    "kling-3.0-omni/image-to-video": {
+      "unit": "second",
+      "defaults": { "resolution": "720p", "duration": 5, "audio": true },
+      "shots": "multi_prompt",
+      "rates": [
+        { "when": { "resolution": "4k" }, "credits": 67 },
+        { "when": { "resolution": "1080p", "audio": true }, "credits": 23 },
+        { "when": { "resolution": "1080p", "audio": false }, "credits": 18 },
+        { "when": { "resolution": "720p", "audio": true }, "credits": 18 },
+        { "when": { "resolution": "720p", "audio": false }, "credits": 14 }
+      ],
+      "source": "https://kie.ai/kling-o3",
+      "checked": "2026-08-31",
+      "notes": "audio missing from the payload: default unknown, priced with audio (worst case)."
+    },
+    "kling-3.0-omni/reference-to-video": {
+      "unit": "second",
+      "defaults": { "resolution": "720p", "duration": 5, "audio": true },
+      "shots": "multi_prompt",
+      "rates": [
+        { "when": { "resolution": "4k" }, "credits": 67 },
+        { "when": { "resolution": "1080p", "video_urls": true }, "credits": 27 },
+        { "when": { "resolution": "1080p", "audio": true }, "credits": 23 },
+        { "when": { "resolution": "1080p", "audio": false }, "credits": 18 },
+        { "when": { "resolution": "720p", "video_urls": true }, "credits": 20 },
+        { "when": { "resolution": "720p", "audio": true }, "credits": 18 },
+        { "when": { "resolution": "720p", "audio": false }, "credits": 14 }
+      ],
+      "source": "https://kie.ai/kling-o3",
+      "checked": "2026-08-31",
+      "notes": "A video input sets the price, with or without audio."
+    },
+    "kling-3.0-omni/transformation": {
+      "unit": "second",
+      "defaults": { "resolution": "720p", "duration": 5 },
+      "shots": "multi_prompt",
+      "rates": [
+        { "when": { "resolution": "4k" }, "credits": 67 },
+        { "when": { "resolution": "1080p" }, "credits": 27 },
+        { "when": { "resolution": "720p" }, "credits": 20 }
+      ],
+      "source": "https://kie.ai/kling-o3",
+      "checked": "2026-08-31"
+    },
+    "nano-banana-pro": {
+      "unit": "call",
+      "defaults": {},
+      "rates": [
+        { "when": { "resolution": "4k" }, "credits": 24 }
+      ],
+      "source": "not recorded",
+      "checked": "2026-08-31",
+      "notes": "Only the 4K price was recorded. Other resolutions still need to be looked up."
+    }
+  }
+}
