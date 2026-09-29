@@ -1,6 +1,7 @@
 import { en, type Messages } from './en';
 import { fr } from './fr';
 import { es } from './es';
+import { readPreference, writePreference } from '../storage';
 
 /**
  * Langues de l'interface. Seul le « chrome » est traduit : prompts, notes,
@@ -36,12 +37,8 @@ function isLocale(value: unknown): value is Locale {
 function detect(): Locale {
 	if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
 
-	try {
-		const saved = localStorage.getItem(STORAGE_KEY);
-		if (isLocale(saved)) return saved;
-	} catch {
-		// Stockage bloqué (navigation privée, politique du navigateur) : on devine.
-	}
+	const saved = readPreference(STORAGE_KEY);
+	if (isLocale(saved)) return saved;
 
 	for (const tag of navigator.languages ?? [navigator.language]) {
 		const base = tag?.toLowerCase().split('-')[0];
@@ -63,11 +60,7 @@ class I18n {
 	set(locale: Locale) {
 		this.locale = locale;
 		this.#syncDocument();
-		try {
-			localStorage.setItem(STORAGE_KEY, locale);
-		} catch {
-			// Le choix vaut pour cette session seulement ; rien de grave.
-		}
+		writePreference(STORAGE_KEY, locale);
 	}
 
 	/** `lang` sur `<html>` : lecteurs d'écran, césure et correcteur en dépendent. */

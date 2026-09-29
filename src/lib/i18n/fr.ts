@@ -8,6 +8,10 @@ export const fr: Messages = {
 		label: 'Langue'
 	},
 
+	currency: {
+		label: 'Devise'
+	},
+
 	live: {
 		on: 'Surveillance active',
 		off: 'Hors ligne'
@@ -47,7 +51,7 @@ export const fr: Messages = {
 			'Ajoutez des sidecars `.json` à côté de vos fichiers pour filtrer par modèle, service ou tag.',
 		generations: (count) => plural(count, 'génération', 'générations'),
 		ofTotal: (total) => `sur ${total}`,
-		totalConverted: 'Total converti en euros',
+		totalConverted: (currency) => `Total converti en ${currency}`,
 		excludedFromTotal: (count) =>
 			plural(
 				count,

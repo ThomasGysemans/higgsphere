@@ -1,10 +1,11 @@
-import { DISPLAY_CURRENCY, toEur } from './currency';
+import { fromEur, toEur } from './currency';
+import { displayCurrency } from './display-currency.svelte';
 import { i18n } from './i18n/index.svelte';
 
 /*
- * Toutes les mises en forme suivent la langue de l'interface : lue ici, dans
- * un template ou un `$derived`, `i18n.locale` rend l'affichage réactif au
- * changement de langue. La devise, elle, ne change pas : tout reste en euros.
+ * Toutes les mises en forme suivent les préférences de l'utilisateur : lues
+ * ici, dans un template ou un `$derived`, `i18n.locale` et `displayCurrency.code`
+ * rendent l'affichage réactif à un changement de langue ou de devise.
  */
 
 export function formatBytes(bytes: number): string {
@@ -19,7 +20,7 @@ export function formatBytes(bytes: number): string {
  * Formate un montant dans la devise donnée, sans conversion.
  * Sert à afficher le montant d'origine tel qu'il figure dans le sidecar.
  */
-export function formatMoney(amount: number | null, currency = DISPLAY_CURRENCY): string {
+export function formatMoney(amount: number | null, currency: string = displayCurrency.code): string {
 	if (amount === null || !Number.isFinite(amount)) return '—';
 	// Un coût par génération est souvent une fraction de centime : on garde de la
 	// précision sur les petites valeurs.
@@ -28,6 +29,10 @@ export function formatMoney(amount: number | null, currency = DISPLAY_CURRENCY):
 		return new Intl.NumberFormat(i18n.locale, {
 			style: 'currency',
 			currency,
+			// La devise choisie par l'utilisateur n'a rien d'ambigu : « 3,27 $ »
+			// plutôt que « 3,27 $US ». Toute autre devise garde son symbole
+			// distinctif, car « $ » seul pourrait aussi bien être canadien.
+			currencyDisplay: currency === displayCurrency.code ? 'narrowSymbol' : 'symbol',
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits
 		}).format(amount);
@@ -37,20 +42,29 @@ export function formatMoney(amount: number | null, currency = DISPLAY_CURRENCY):
 	}
 }
 
-/** Formate un montant déjà exprimé en euros. */
-export function formatEur(amount: number | null): string {
-	return formatMoney(amount, DISPLAY_CURRENCY);
+/**
+ * Formate un montant exprimé en euros — la devise pivot des sommes et des
+ * moyennes — dans la devise d'affichage choisie.
+ */
+export function formatFromEur(eur: number | null): string {
+	if (eur === null) return formatMoney(null);
+	return formatMoney(fromEur(eur, displayCurrency.code), displayCurrency.code);
 }
 
 /**
- * Convertit puis formate un coût en euros. Une devise sans taux connu est
- * affichée telle quelle, dans sa propre devise, plutôt que faussement convertie.
+ * Formate un coût de sidecar dans la devise d'affichage.
+ *
+ * Un montant déjà dans cette devise est affiché tel quel, sans aller-retour
+ * par l'euro qui pourrait l'arrondir. Une devise sans taux connu est affichée
+ * dans sa propre devise, plutôt que faussement convertie.
  */
 export function formatCost(cost: number | null, currency?: string | null): string {
 	const converted = toEur(cost, currency);
 	if (!converted) return '—';
-	if (converted.eur === null) return formatMoney(converted.source, converted.sourceCurrency);
-	return formatEur(converted.eur);
+	if (converted.eur === null || converted.sourceCurrency === displayCurrency.code) {
+		return formatMoney(converted.source, converted.sourceCurrency);
+	}
+	return formatFromEur(converted.eur);
 }
 
 export function formatDuration(seconds: number | null): string {

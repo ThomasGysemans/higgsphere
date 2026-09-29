@@ -5,6 +5,10 @@ import { i18n } from './i18n/index.svelte';
 /**
  * État client de la page des dépenses.
  *
+ * Tous les champs `eur` sont exprimés dans l'euro pivot (voir `currency.ts`) :
+ * la conversion vers la devise choisie se fait au formatage, si bien que ces
+ * agrégats ne dépendent pas de la devise d'affichage.
+ *
  * Le mur compte des fichiers, cette page compte des paiements : elle lit
  * `/api/spend`, qui réunit les sidecars encore présents et le journal des
  * générations supprimées. Un média effacé continue donc de peser dans le total.
@@ -47,7 +51,7 @@ export interface ModelStat {
 export interface ProviderStat {
 	service: string;
 	color: string;
-	/** Total converti en euros. */
+	/** Total ramené à l'euro pivot. */
 	eur: number;
 	count: number;
 	/** Générations dont le média a été supprimé. */

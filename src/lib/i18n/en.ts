@@ -19,6 +19,10 @@ export const en = {
 		label: 'Language'
 	},
 
+	currency: {
+		label: 'Currency'
+	},
+
 	live: {
 		on: 'Watching for new files',
 		off: 'Offline'
@@ -56,7 +60,7 @@ export const en = {
 		facetsHint: 'Add `.json` sidecars next to your files to filter by model, service or tag.',
 		generations: (count: number) => plural(count, 'generation', 'generations'),
 		ofTotal: (total: number) => `of ${total}`,
-		totalConverted: 'Total converted to euros',
+		totalConverted: (currency: string) => `Total converted to ${currency}`,
 		excludedFromTotal: (count: number) =>
 			plural(
 				count,

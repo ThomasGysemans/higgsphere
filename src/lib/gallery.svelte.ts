@@ -101,7 +101,8 @@ class GalleryStore {
 		const sorters: Record<SortKey, (a: GenerationItem, b: GenerationItem) => number> = {
 			newest: (a, b) => b.createdAt - a.createdAt,
 			oldest: (a, b) => a.createdAt - b.createdAt,
-			// Comparaison en euros : trier sur les montants bruts mélangerait les devises.
+			// Comparaison dans l'euro pivot : trier sur les montants bruts mélangerait
+			// les devises. L'ordre ne dépend pas de la devise d'affichage.
 			'cost-desc': (a, b) => eurValue(b.cost, b.currency) - eurValue(a.cost, a.currency),
 			'size-desc': (a, b) => b.bytes - a.bytes,
 			name: (a, b) => a.name.localeCompare(b.name)
@@ -122,7 +123,7 @@ class GalleryStore {
 
 	selectedIndex = $derived(this.filtered.findIndex((item) => item.id === this.selectedId));
 
-	/** Somme des coûts visibles, convertie en euros. */
+	/** Somme des coûts visibles, dans l'euro pivot ; convertie à l'affichage. */
 	visibleCost = $derived(
 		this.filtered.reduce((sum, item) => sum + eurValue(item.cost, item.currency), 0)
 	);

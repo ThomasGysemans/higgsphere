@@ -8,6 +8,10 @@ export const es: Messages = {
 		label: 'Idioma'
 	},
 
+	currency: {
+		label: 'Moneda'
+	},
+
 	live: {
 		on: 'Vigilando archivos nuevos',
 		off: 'Sin conexión'
@@ -47,7 +51,7 @@ export const es: Messages = {
 			'Añade archivos `.json` junto a tus medios para filtrar por modelo, servicio o etiqueta.',
 		generations: (count) => plural(count, 'generación', 'generaciones'),
 		ofTotal: (total) => `de ${total}`,
-		totalConverted: 'Total convertido a euros',
+		totalConverted: (currency) => `Total convertido a ${currency}`,
 		excludedFromTotal: (count) =>
 			plural(
 				count,

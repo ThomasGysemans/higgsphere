@@ -74,14 +74,34 @@ historial para mostrar el gasto a lo largo del tiempo, por proveedor y por model
 El historial solo admite añadidos y se versiona en git. Es el único archivo de la carpeta
 que no puede reconstruirse a partir de los demás.
 
+### Monedas
+
+Cada sidecar guarda su coste en la moneda que facturó el proveedor (`"currency": "USD"`),
+y ese valor nunca se reescribe. La cabecera tiene un selector de **moneda de
+visualización**: euro (por defecto), dólar estadounidense o libra esterlina. Todos los
+importes del muro, del lightbox y de la página Gastos se convierten a ella al
+renderizar, y el lightbox muestra además el importe facturado original.
+
+- Los tipos de cambio están escritos en `RATES_TO_EUR`, en
+  [src/lib/currency.ts](src/lib/currency.ts), porque la herramienta no hace llamadas de
+  red. Se quedan desfasados: actualízalos de vez en cuando.
+- El euro es la moneda pivote. Totales, medias, porcentajes y ordenaciones se calculan en
+  euros, y solo se convierten a la moneda de visualización al formatear. Como la
+  conversión es lineal, convertir un total da lo mismo que sumar importes convertidos:
+  cambiar de moneda no requiere recalcular nada.
+- Una moneda facturada que no está en la tabla nunca se adivina. El importe se muestra en
+  su propia moneda, señalado, y queda fuera de los totales.
+- **Para ofrecer otra moneda de visualización**, añade su código a `DISPLAY_CURRENCIES`.
+  El tipo de `RATES_TO_EUR` hace fallar `npm run check` hasta que añadas su tipo de cambio.
+
 ## Idiomas
 
 La interfaz está disponible en **inglés, francés y español**. En la cabecera de cada página
 hay un selector de idioma.
 
 - **Qué se traduce:** la propia interfaz (etiquetas, botones, estados vacíos, mensajes de
-  error), además del formato de fechas, números y porcentajes. Los importes se muestran
-  siempre en euros, sea cual sea el idioma.
+  error), además del formato de fechas, números y porcentajes. La moneda es un ajuste
+  aparte (ver más arriba): cambiar de idioma nunca la modifica.
 - **Qué no se traduce nunca:** todo lo que viene de un sidecar. Prompts, notas, etiquetas,
   nombres de modelos y proveedores, nombres de archivo y metadatos personalizados se
   muestran tal como se escribieron.

@@ -74,14 +74,34 @@ fournisseur et par modèle.
 Le journal est en ajout seul et versionné dans git. C'est le seul fichier du dossier
 qu'aucun autre ne permet de reconstruire.
 
+### Devises
+
+Chaque sidecar enregistre son coût dans la devise facturée par le fournisseur
+(`"currency": "USD"`), et cette valeur n'est jamais réécrite. L'en-tête propose un
+sélecteur de **devise d'affichage** : euro (par défaut), dollar américain ou livre
+sterling. Tous les montants du mur, du lightbox et de la page Dépenses y sont convertis
+au rendu, et le lightbox rappelle aussi le montant facturé d'origine.
+
+- Les taux sont écrits en dur dans `RATES_TO_EUR`, dans
+  [src/lib/currency.ts](src/lib/currency.ts), car l'outil ne fait aucun appel réseau. Ils
+  vieillissent : mettez-les à jour de temps en temps.
+- L'euro sert de devise pivot. Totaux, moyennes, parts et tris sont calculés en euros, et
+  convertis vers la devise d'affichage seulement au formatage. La conversion étant
+  linéaire, convertir un total revient à totaliser des montants convertis : changer de
+  devise ne demande aucun recalcul.
+- Une devise facturée absente de la table n'est jamais devinée. Le montant est affiché
+  dans sa propre devise, signalé, et exclu des totaux.
+- **Pour proposer une autre devise d'affichage**, ajoutez son code à `DISPLAY_CURRENCIES`.
+  Le type de `RATES_TO_EUR` fait alors échouer `npm run check` tant que son taux manque.
+
 ## Langues
 
 L'interface est disponible en **anglais, français et espagnol**. Un sélecteur de langue se
 trouve dans l'en-tête de chaque page.
 
 - **Ce qui est traduit :** l'interface elle-même (libellés, boutons, états vides, messages
-  d'erreur), ainsi que le format des dates, des nombres et des pourcentages. Les montants
-  restent affichés en euros, quelle que soit la langue.
+  d'erreur), ainsi que le format des dates, des nombres et des pourcentages. La devise est
+  un réglage séparé (voir plus haut) : changer de langue ne la modifie jamais.
 - **Ce qui n'est jamais traduit :** tout ce qui vient d'un sidecar. Prompts, notes, tags,
   noms de modèles et de fournisseurs, noms de fichiers et métadonnées personnalisées
   s'affichent tels qu'ils ont été écrits.

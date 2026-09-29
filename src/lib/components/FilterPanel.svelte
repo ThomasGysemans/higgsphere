@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { gallery, SORT_KEYS } from '$lib/gallery.svelte';
-	import { formatBytes, formatEur } from '$lib/format';
+	import { formatBytes, formatFromEur } from '$lib/format';
 	import { i18n } from '$lib/i18n/index.svelte';
+	import { displayCurrency } from '$lib/display-currency.svelte';
 	import Logo from '$lib/components/Logo.svelte';
-	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
+	import Preferences from '$lib/components/Preferences.svelte';
 	import Rich from '$lib/components/Rich.svelte';
 
 	const m = $derived(i18n.m);
@@ -89,7 +90,7 @@
 			{m.bar.spend}
 		</a>
 
-		<LanguagePicker />
+		<Preferences />
 	</div>
 
 	{#if open}
@@ -184,9 +185,9 @@
 			<span
 				title={gallery.unconvertibleCount
 					? m.bar.excludedFromTotal(gallery.unconvertibleCount)
-					: m.bar.totalConverted}
+					: m.bar.totalConverted(displayCurrency.code)}
 			>
-				{formatEur(gallery.visibleCost)}{#if gallery.unconvertibleCount}<em class="incomplete"
+				{formatFromEur(gallery.visibleCost)}{#if gallery.unconvertibleCount}<em class="incomplete"
 						>{m.bar.notConverted(gallery.unconvertibleCount)}</em
 					>{/if}
 			</span>

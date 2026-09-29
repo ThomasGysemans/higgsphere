@@ -11,6 +11,7 @@
 		formatRelative
 	} from '$lib/format';
 	import { toEur } from '$lib/currency';
+	import { displayCurrency } from '$lib/display-currency.svelte';
 	import { i18n } from '$lib/i18n/index.svelte';
 	import ClampedText from './ClampedText.svelte';
 
@@ -84,8 +85,13 @@
 
 	const position = $derived(`${gallery.selectedIndex + 1} / ${gallery.filtered.length}`);
 
-	/** Coût converti en euros, avec le montant facturé d'origine. */
+	/** Coût ramené à l'euro pivot, avec le montant facturé d'origine. */
 	const cost = $derived(toEur(item.cost, item.currency));
+
+	/** Le montant d'origine n'est rappelé que s'il a réellement été converti. */
+	const converted = $derived(
+		cost !== null && cost.eur !== null && cost.sourceCurrency !== displayCurrency.code
+	);
 
 	$effect(() => {
 		// Redonne le focus dès que le lightbox passe à un autre élément, et annule
@@ -215,7 +221,7 @@
 					<dt>{m.lightbox.cost}</dt>
 					<dd class="cost">
 						{formatCost(item.cost, item.currency)}
-						{#if cost?.converted}
+						{#if converted && cost}
 							<span class="source-amount" title={m.lightbox.convertedTitle}>
 								{m.lightbox.convertedFrom(formatMoney(cost.source, cost.sourceCurrency))}
 							</span>

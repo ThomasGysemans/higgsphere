@@ -6,14 +6,14 @@
 		formatDate,
 		formatDay,
 		formatDuration,
-		formatEur,
+		formatFromEur,
 		formatPercent,
 		formatRelative,
 		formatTime
 	} from '$lib/format';
 	import { i18n } from '$lib/i18n/index.svelte';
 	import Logo from '$lib/components/Logo.svelte';
-	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
+	import Preferences from '$lib/components/Preferences.svelte';
 	import Rich from '$lib/components/Rich.svelte';
 
 	const m = $derived(i18n.m);
@@ -60,7 +60,7 @@
 			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
 			{m.stats.back}
 		</a>
-		<LanguagePicker />
+		<Preferences />
 	</div>
 </header>
 
@@ -83,7 +83,7 @@
 		<section class="tiles">
 			<div class="tile">
 				<h2>{m.stats.totalSpent}</h2>
-				<p class="figure">{formatEur(spend.totals.eur)}</p>
+				<p class="figure">{formatFromEur(spend.totals.eur)}</p>
 				<p class="sub">
 					{m.stats.generations(spend.totals.count)}
 					{#if spend.totals.first}
@@ -94,7 +94,7 @@
 
 			<div class="tile">
 				<h2>{m.stats.averageCost}</h2>
-				<p class="figure">{formatEur(spend.totals.average)}</p>
+				<p class="figure">{formatFromEur(spend.totals.average)}</p>
 				<p class="sub">{m.stats.averageSub}</p>
 			</div>
 
@@ -157,7 +157,7 @@
 				</div>
 				<div class="chart" role="img" aria-label={m.stats.chartLabel}>
 					{#each spend.buckets as bucket (bucket.key)}
-						<div class="col" title="{bucket.label} — {formatEur(bucket.eur)} ({bucket.count})">
+						<div class="col" title="{bucket.label} — {formatFromEur(bucket.eur)} ({bucket.count})">
 							<div class="stack" style:height="{barHeight(bucket.eur)}%">
 								{#each bucket.slices as slice (slice.service)}
 									<div
@@ -185,7 +185,7 @@
 							<header>
 								<span class="dot" style:background={provider.color}></span>
 								<h3>{serviceName(provider.service)}</h3>
-								<strong>{formatEur(provider.eur)}</strong>
+								<strong>{formatFromEur(provider.eur)}</strong>
 							</header>
 							<div class="share"><span style:width="{provider.share * 100}%"></span></div>
 							<p class="sub">
@@ -198,7 +198,7 @@
 									<li>
 										<span class="name">{modelName(model.model)}</span>
 										<span class="count">×{model.count}</span>
-										<span class="amount">{formatEur(model.eur)}</span>
+										<span class="amount">{formatFromEur(model.eur)}</span>
 									</li>
 								{/each}
 							</ul>
@@ -226,7 +226,7 @@
 					<div class="day">
 						<div class="day-head">
 							<h3>{bucket.label}</h3>
-							<span class="day-total">{formatEur(bucket.eur)}</span>
+							<span class="day-total">{formatFromEur(bucket.eur)}</span>
 							<span class="day-count">{bucket.count}</span>
 						</div>
 						<ul class="rows">

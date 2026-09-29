@@ -70,14 +70,33 @@ reads the ledger to show spending over time, by provider and by model.
 The ledger is append-only and committed to git. It's the one file in the folder that
 can't be rebuilt from the others.
 
+### Currencies
+
+Each sidecar stores its cost in the currency the provider billed (`"currency": "USD"`),
+and that value is never rewritten. The header has a picker for the **display currency**:
+euro (default), US dollar or pound sterling. Every amount on the wall, in the lightbox and
+on the Spend page is converted to it at render time, and the lightbox also shows the
+original billed amount.
+
+- Rates are hard-coded in `RATES_TO_EUR` in [src/lib/currency.ts](src/lib/currency.ts)
+  because the tool makes no network calls. They drift, so update them from time to time.
+- The euro is the pivot currency. Totals, averages, shares and sorting are computed in
+  euros, and converted to the display currency only when formatted. Conversion is linear,
+  so converting a total gives the same result as totalling converted amounts, and
+  switching currency needs no recomputation.
+- A billed currency with no rate in the table is never guessed. It is shown in its own
+  currency, flagged, and left out of totals.
+- **To offer another display currency**, add its code to `DISPLAY_CURRENCIES`. The type of
+  `RATES_TO_EUR` then fails `npm run check` until you add its rate.
+
 ## Languages
 
 The interface is available in **English, French and Spanish**. A language picker sits in
 the header of every page.
 
 - **What gets translated:** the interface itself (labels, buttons, empty states, error
-  messages), plus date, number and percentage formats. Amounts are always shown in euros,
-  whatever the language.
+  messages), plus date, number and percentage formats. The currency is a separate
+  setting (see below): switching language never changes it.
 - **What never gets translated:** anything that comes from a sidecar. Prompts, notes,
   tags, model and provider names, file names and custom metadata are shown exactly as
   written.

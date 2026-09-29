@@ -126,11 +126,20 @@ de fausser le total.
 correspondant dans `currency` — le plus souvent `USD`. Ne convertissez rien à la main : le
 sidecar garde la donnée d'origine, et le mur se charge de l'affichage.
 
-**Le mur affiche tous les montants en euros.** La conversion est faite à l'affichage
-seulement, à partir de la table de taux de [src/lib/currency.ts](src/lib/currency.ts).
-Ces taux sont **figés dans le code** — l'outil ne fait aucun appel réseau — donc ils
-dérivent avec le temps : relisez-les de temps en temps. Le lightbox affiche le montant
-d'origine sous le montant converti, pour que le chiffre reste vérifiable.
+**Le mur affiche tous les montants dans la devise choisie par l'utilisateur** — euro,
+dollar américain ou livre sterling, via le sélecteur de l'en-tête ; l'euro par défaut. La
+conversion est faite à l'affichage seulement, à partir de la table de taux de
+[src/lib/currency.ts](src/lib/currency.ts). Ces taux sont **figés dans le code** — l'outil
+ne fait aucun appel réseau — donc ils dérivent avec le temps : relisez-les de temps en
+temps. Le lightbox affiche le montant d'origine sous le montant converti, pour que le
+chiffre reste vérifiable ; un montant déjà dans la devise choisie est affiché tel quel.
+
+L'euro sert de **devise pivot** : sommes, moyennes, parts et tris se calculent en euros
+(les champs `eur` des stores), et la conversion vers la devise choisie n'a lieu qu'au
+formatage (`formatFromEur`, `formatCost` dans [src/lib/format.ts](src/lib/format.ts)).
+Ne convertissez jamais vers la devise d'affichage avant d'agréger. Pour proposer une
+nouvelle devise d'affichage, ajoutez-la à `DISPLAY_CURRENCIES` : le type de `RATES_TO_EUR`
+refuse alors la compilation tant que son taux manque.
 
 Une devise absente de la table n'est jamais convertie de force : le montant est affiché
 dans sa propre devise, signalé, et exclu du total, qui indique alors combien de montants
@@ -222,7 +231,7 @@ pas quand on filtre.
 Le seul filtre est le fournisseur. **Les générations supprimées ne sont pas masquables** :
 c'est le fichier qui a disparu, pas le paiement — les cacher rendrait le total faux.
 
-Les mêmes règles de devise qu'ailleurs s'appliquent : affichage en euros, montants non
+Les mêmes règles de devise qu'ailleurs s'appliquent : affichage dans la devise choisie, montants non
 convertibles exclus du total et signalés, générations sans `cost` comptées comme telles
 plutôt que comme des zéros.
 
@@ -266,10 +275,11 @@ d'environnement `GENERATIONS_DIR` (chemin absolu).
 | [src/routes/stats/+page.svelte](src/routes/stats/+page.svelte) | Page des dépenses : totaux, chronologie, fournisseurs, journal. |
 | [src/routes/api/generations/stream/+server.ts](src/routes/api/generations/stream/+server.ts) | Flux SSE de détection des changements (`fs.watch` + anti-rebond). |
 | [src/routes/media/\[...path\]/+server.ts](src/routes/media/[...path]/+server.ts) | Sert les fichiers, avec support des requêtes `Range` (indispensable aux vidéos). |
-| [src/lib/currency.ts](src/lib/currency.ts) | Devise d'affichage, table de taux vers l'euro, conversion. |
+| [src/lib/currency.ts](src/lib/currency.ts) | Devises d'affichage proposées, table de taux vers l'euro pivot, conversion. |
+| [src/lib/display-currency.svelte.ts](src/lib/display-currency.svelte.ts) | Devise d'affichage choisie par l'utilisateur, mémorisée. |
 | [src/lib/i18n/index.svelte.ts](src/lib/i18n/index.svelte.ts) | Langues disponibles (`LOCALES`), détection, store réactif `i18n`. |
 | [src/lib/i18n/en.ts](src/lib/i18n/en.ts) | Dictionnaire de référence : son type (`Messages`) est le contrat des autres langues. |
-| [src/lib/components/LanguagePicker.svelte](src/lib/components/LanguagePicker.svelte) | Sélecteur de langue, présent dans l'en-tête de chaque page. |
+| [src/lib/components/Preferences.svelte](src/lib/components/Preferences.svelte) | Sélecteurs de langue et de devise, présents dans l'en-tête de chaque page. |
 | [src/lib/components/Rich.svelte](src/lib/components/Rich.svelte) | Rend en `<code>` les segments entre accents graves d'une traduction. |
 | [src/lib/gallery.svelte.ts](src/lib/gallery.svelte.ts) | État client : index, recherche, filtres, tri, sélection. |
 | [src/lib/spend.svelte.ts](src/lib/spend.svelte.ts) | État client des dépenses : agrégats par fournisseur, par modèle, par période. |
@@ -347,6 +357,7 @@ Ces points sont des exigences produit, pas des détails d'implémentation :
   sidecar. Une clé de regroupement ne doit jamais être un libellé traduit : le fournisseur
   inconnu est la clé `''`, et son nom (« Fournisseur inconnu »…) n'est résolu qu'au rendu —
   sinon changer de langue changerait les couleurs et viderait les filtres.
-- **Les montants s'affichent en euros, la donnée reste dans sa devise d'origine.** Un total
+- **Les montants s'affichent dans la devise choisie, la donnée reste dans sa devise
+  d'origine.** Le choix de devise est indépendant de la langue. Un total
   ne doit jamais additionner des devises différentes, ni inclure un montant qu'aucun taux
   ne permet de convertir sans le signaler.
