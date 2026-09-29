@@ -1,5 +1,6 @@
 import type { SpendEntry, SpendIndex } from './types';
 import { eurValue, toEur } from './currency';
+import { i18n } from './i18n/index.svelte';
 
 /**
  * État client de la page des dépenses.
@@ -9,11 +10,18 @@ import { eurValue, toEur } from './currency';
  * générations supprimées. Un média effacé continue donc de peser dans le total.
  */
 
-/** Étiquette des dépenses dont le sidecar ne déclarait aucun service. */
-export const UNKNOWN_SERVICE = 'Fournisseur inconnu';
+/**
+ * Clé de regroupement des dépenses dont le sidecar ne déclarait aucun service.
+ *
+ * C'est une identité, pas un libellé : elle sert de clé de palette et de
+ * filtre, et doit donc survivre à un changement de langue. Le texte affiché
+ * (« Fournisseur inconnu »…) vient du dictionnaire, au rendu. Un vrai service
+ * ne peut pas valoir `''` : `serviceOf` retombe ici sur toute valeur vide.
+ */
+export const UNKNOWN_SERVICE = '';
 
 /** Idem pour le modèle. */
-export const UNKNOWN_MODEL = 'Modèle inconnu';
+export const UNKNOWN_MODEL = '';
 
 /**
  * Couleurs des fournisseurs, assignées par rang de dépense (le plus gros
@@ -59,6 +67,8 @@ export interface SpendBucket {
 	key: string;
 	at: number;
 	label: string;
+	/** Libellé court de l'axe, sans l'année. */
+	tick: string;
 	eur: number;
 	count: number;
 	/** Répartition du montant par fournisseur, pour la barre empilée. */
@@ -73,7 +83,7 @@ const MONTHLY_THRESHOLD_DAYS = 75;
 
 const DAY_MS = 86_400_000;
 
-function serviceOf(entry: SpendEntry): string {
+export function serviceOf(entry: SpendEntry): string {
 	return entry.service?.trim() || UNKNOWN_SERVICE;
 }
 
@@ -84,12 +94,19 @@ function bucketKey(at: number, granularity: Granularity): string {
 	return granularity === 'month' ? month : `${month}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-function bucketLabel(at: number, granularity: Granularity): string {
+/**
+ * Libellés dans la langue de l'interface. L'année est retirée des graduations
+ * en la demandant absente à Intl, pas en la coupant après coup : sa place et
+ * sa ponctuation varient d'une langue à l'autre (« 29 sept. 2026 »,
+ * « Sep 29, 2026 »).
+ */
+function bucketLabel(at: number, granularity: Granularity, withYear = true): string {
+	const year = withYear ? ({ year: 'numeric' } as const) : {};
 	return new Intl.DateTimeFormat(
-		'fr-FR',
+		i18n.locale,
 		granularity === 'month'
-			? { month: 'long', year: 'numeric' }
-			: { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }
+			? { month: withYear ? 'long' : 'short', ...year }
+			: { weekday: 'short', day: 'numeric', month: 'short', ...year }
 	).format(new Date(at));
 }
 
@@ -244,6 +261,7 @@ class SpendStore {
 					key,
 					at: entry.createdAt,
 					label: bucketLabel(entry.createdAt, granularity),
+					tick: bucketLabel(entry.createdAt, granularity, false),
 					eur: 0,
 					count: 0,
 					slices: [],

@@ -1,12 +1,15 @@
 <script lang="ts">
-	import { gallery, SORT_LABELS, type SortKey } from '$lib/gallery.svelte';
+	import { gallery, SORT_KEYS } from '$lib/gallery.svelte';
 	import { formatBytes, formatEur } from '$lib/format';
+	import { i18n } from '$lib/i18n/index.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
+	import Rich from '$lib/components/Rich.svelte';
+
+	const m = $derived(i18n.m);
 
 	let open = $state(false);
 	let input = $state<HTMLInputElement | null>(null);
-
-	const sortKeys = Object.keys(SORT_LABELS) as SortKey[];
 
 	const hasFacets = $derived(
 		gallery.facets.models.length + gallery.facets.services.length + gallery.facets.tags.length > 0
@@ -42,8 +45,8 @@
 				bind:this={input}
 				bind:value={gallery.query}
 				type="search"
-				placeholder="Rechercher un prompt, un modèle, un tag…"
-				aria-label="Rechercher"
+				placeholder={m.bar.searchPlaceholder}
+				aria-label={m.bar.searchLabel}
 				spellcheck="false"
 				onkeydown={(event) => {
 					if (event.key === 'Escape') {
@@ -57,10 +60,10 @@
 
 		<div class="controls">
 			<label class="select">
-				<span class="sr">Trier par</span>
+				<span class="sr">{m.bar.sortBy}</span>
 				<select bind:value={gallery.sort}>
-					{#each sortKeys as key (key)}
-						<option value={key}>{SORT_LABELS[key]}</option>
+					{#each SORT_KEYS as key (key)}
+						<option value={key}>{m.sort[key]}</option>
 					{/each}
 				</select>
 			</label>
@@ -72,25 +75,27 @@
 				onclick={() => (open = !open)}
 				aria-expanded={open}
 			>
-				Filtres
+				{m.bar.filters}
 				{#if gallery.activeFilterCount > 0}
 					<span class="count">{gallery.activeFilterCount}</span>
 				{/if}
 			</button>
 		</div>
 
-		<a class="nav" href="/stats" title="Dépenses par fournisseur">
+		<a class="nav" href="/stats" title={m.bar.spendTitle}>
 			<svg viewBox="0 0 24 24" aria-hidden="true"
 				><path d="M4 19V11M10 19V5M16 19v-6M22 19H2" /></svg
 			>
-			Dépenses
+			{m.bar.spend}
 		</a>
+
+		<LanguagePicker />
 	</div>
 
 	{#if open}
 		<div class="panel">
 			<div class="group">
-				<h2>Type</h2>
+				<h2>{m.bar.type}</h2>
 				<div class="chips">
 					{#each ['image', 'video'] as const as kind (kind)}
 						<button
@@ -99,7 +104,7 @@
 							class:on={gallery.kinds.includes(kind)}
 							onclick={() => gallery.toggleKind(kind)}
 						>
-							{kind === 'video' ? 'Vidéos' : 'Images'}
+							{kind === 'video' ? m.bar.videos : m.bar.images}
 							<em>{gallery.items.filter((item) => item.kind === kind).length}</em>
 						</button>
 					{/each}
@@ -108,7 +113,7 @@
 
 			{#if gallery.facets.models.length}
 				<div class="group">
-					<h2>Modèle</h2>
+					<h2>{m.bar.model}</h2>
 					<div class="chips">
 						{#each gallery.facets.models as model (model)}
 							<button
@@ -127,7 +132,7 @@
 
 			{#if gallery.facets.services.length}
 				<div class="group">
-					<h2>Service</h2>
+					<h2>{m.bar.service}</h2>
 					<div class="chips">
 						{#each gallery.facets.services as service (service)}
 							<button
@@ -145,7 +150,7 @@
 
 			{#if gallery.facets.tags.length}
 				<div class="group">
-					<h2>Tags</h2>
+					<h2>{m.bar.tags}</h2>
 					<div class="chips">
 						{#each gallery.facets.tags as tag (tag)}
 							<button
@@ -162,10 +167,7 @@
 			{/if}
 
 			{#if !hasFacets}
-				<p class="hint">
-					Ajoutez des sidecars <code>.json</code> à côté de vos fichiers pour filtrer par modèle, service
-					ou tag.
-				</p>
+				<p class="hint"><Rich text={m.bar.facetsHint} /></p>
 			{/if}
 		</div>
 	{/if}
@@ -174,18 +176,18 @@
 		<span
 			><strong>{gallery.filtered.length}</strong>
 			{gallery.filtered.length === gallery.items.length
-				? 'générations'
-				: `sur ${gallery.items.length}`}</span
+				? m.bar.generations(gallery.filtered.length)
+				: m.bar.ofTotal(gallery.items.length)}</span
 		>
 		{#if gallery.filtered.length > 0}
 			<span class="dot">·</span>
 			<span
 				title={gallery.unconvertibleCount
-					? `${gallery.unconvertibleCount} montant(s) exclu(s) du total : devise sans taux de conversion`
-					: 'Total converti en euros'}
+					? m.bar.excludedFromTotal(gallery.unconvertibleCount)
+					: m.bar.totalConverted}
 			>
 				{formatEur(gallery.visibleCost)}{#if gallery.unconvertibleCount}<em class="incomplete"
-						>+{gallery.unconvertibleCount} non converti(s)</em
+						>{m.bar.notConverted(gallery.unconvertibleCount)}</em
 					>{/if}
 			</span>
 			<span class="dot">·</span>
@@ -193,7 +195,7 @@
 		{/if}
 		{#if gallery.activeFilterCount > 0}
 			<button type="button" class="clear" onclick={() => gallery.resetFilters()}
-				>réinitialiser</button
+				>{m.common.reset}</button
 			>
 		{/if}
 	</div>
@@ -430,7 +432,7 @@
 		color: var(--text-faint);
 	}
 
-	.hint code {
+	.hint :global(code) {
 		font-family: var(--mono);
 		font-size: 11.5px;
 		color: var(--text-dim);

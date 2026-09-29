@@ -1,15 +1,10 @@
-import type { GalleryFacets, GalleryIndex, GenerationItem, MediaKind } from './types';
+import type { DeleteError, GalleryFacets, GalleryIndex, GenerationItem, MediaKind } from './types';
 import { eurValue, toEur } from './currency';
 
 export type SortKey = 'newest' | 'oldest' | 'cost-desc' | 'size-desc' | 'name';
 
-export const SORT_LABELS: Record<SortKey, string> = {
-	newest: 'Plus récent',
-	oldest: 'Plus ancien',
-	'cost-desc': 'Coût ↓',
-	'size-desc': 'Poids ↓',
-	name: 'Nom A→Z'
-};
+/** Ordre du menu de tri ; les libellés vivent dans les dictionnaires (`sort`). */
+export const SORT_KEYS: SortKey[] = ['newest', 'oldest', 'cost-desc', 'size-desc', 'name'];
 
 const EMPTY_FACETS: GalleryFacets = {
 	models: [],
@@ -85,7 +80,7 @@ class GalleryStore {
 
 	/** Id du média en cours de suppression, pour neutraliser l'interface. */
 	deleting = $state<string | null>(null);
-	deleteError = $state<string | null>(null);
+	deleteError = $state<DeleteError | null>(null);
 
 	#source: EventSource | null = null;
 	#inFlight: Promise<void> | null = null;
@@ -207,12 +202,16 @@ class GalleryStore {
 		try {
 			const response = await fetch('/api/generations', {
 				method: 'DELETE',
-				headers: { 'content-type': 'application/json' },
+				headers: { 'content-type': 'application/json', accept: 'application/json' },
 				body: JSON.stringify({ file: item.file })
 			});
 			if (!response.ok) {
-				const body = await response.json().catch(() => null);
-				throw new Error(body?.message ?? `HTTP ${response.status}`);
+				const body: Partial<App.Error> | null = await response.json().catch(() => null);
+				this.deleteError = {
+					code: body?.code ?? null,
+					message: body?.message ?? `HTTP ${response.status}`
+				};
+				return;
 			}
 
 			// Retrait immédiat : le rescan déclenché par fs.watch arriverait trop tard
@@ -221,7 +220,7 @@ class GalleryStore {
 			if (this.selectedId === id) this.selectedId = null;
 			await this.refresh();
 		} catch (error) {
-			this.deleteError = (error as Error).message;
+			this.deleteError = { code: null, message: (error as Error).message };
 		} finally {
 			this.deleting = null;
 		}

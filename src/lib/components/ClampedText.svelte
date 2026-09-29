@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { i18n } from '$lib/i18n/index.svelte';
+
 	interface Props {
 		text: string;
 		/** Nombre de lignes visibles une fois replié. */
@@ -42,7 +44,7 @@
 >{text}</p>
 {#if overflows}
 	<button type="button" class="more" aria-expanded={expanded} aria-controls={id} onclick={() => (expanded = !expanded)}>
-		{expanded ? 'voir moins' : 'voir plus'}
+		{expanded ? i18n.m.clamped.less : i18n.m.clamped.more}
 	</button>
 {/if}
 

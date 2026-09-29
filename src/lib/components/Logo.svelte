@@ -11,6 +11,8 @@
 	 *   2. la sphère opaque qui en cache la moitié arrière,
 	 *   3. l'arc avant redessiné par-dessus.
 	 */
+	import { i18n } from '$lib/i18n/index.svelte';
+
 	let { live = false, size = 20 }: { live?: boolean; size?: number } = $props();
 
 	// Le dégradé est instancié par composant : deux marques sur une même page ne
@@ -23,7 +25,7 @@
 	class="logo"
 	class:live
 	style:--size="{size}px"
-	title={live ? 'Surveillance active' : 'Hors ligne'}
+	title={live ? i18n.m.live.on : i18n.m.live.off}
 >
 	<svg viewBox="0 0 32 32" aria-hidden="true">
 		<defs>

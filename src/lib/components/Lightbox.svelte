@@ -11,6 +11,7 @@
 		formatRelative
 	} from '$lib/format';
 	import { toEur } from '$lib/currency';
+	import { i18n } from '$lib/i18n/index.svelte';
 	import ClampedText from './ClampedText.svelte';
 
 	interface Props {
@@ -18,6 +19,18 @@
 	}
 
 	let { item }: Props = $props();
+
+	const m = $derived(i18n.m);
+
+	/** Phrase traduite si le serveur a donné un code connu, message brut sinon. */
+	const deleteError = $derived(
+		gallery.deleteError &&
+			m.lightbox.deleteFailed(
+				gallery.deleteError.code
+					? m.lightbox.deleteErrors[gallery.deleteError.code]
+					: gallery.deleteError.message
+			)
+	);
 
 	let panel = $state<HTMLElement | null>(null);
 	let copied = $state<string | null>(null);
@@ -129,7 +142,7 @@
 		class="panel"
 		role="dialog"
 		aria-modal="true"
-		aria-label="Détail de la génération"
+		aria-label={m.lightbox.dialogLabel}
 		tabindex="-1"
 		bind:this={panel}
 	>
@@ -145,10 +158,10 @@
 			{/key}
 
 			{#if gallery.filtered.length > 1}
-				<button class="nav prev" type="button" onclick={() => gallery.step(-1)} aria-label="Précédent">
+				<button class="nav prev" type="button" onclick={() => gallery.step(-1)} aria-label={m.lightbox.previous}>
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
 				</button>
-				<button class="nav next" type="button" onclick={() => gallery.step(1)} aria-label="Suivant">
+				<button class="nav next" type="button" onclick={() => gallery.step(1)} aria-label={m.lightbox.next}>
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
 				</button>
 			{/if}
@@ -157,17 +170,17 @@
 		<aside class="meta">
 			<header>
 				<span class="counter">{position}</span>
-				<button class="close" type="button" onclick={close} aria-label="Fermer">
+				<button class="close" type="button" onclick={close} aria-label={m.lightbox.close}>
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
 				</button>
 			</header>
 
 			<section class="prompt-block">
 				<div class="section-head">
-					<h2>Prompt</h2>
+					<h2>{m.lightbox.prompt}</h2>
 					{#if item.prompt}
 						<button type="button" class="ghost" onclick={() => copy('prompt', item.prompt)}>
-							{copied === 'prompt' ? 'copié' : 'copier'}
+							{copied === 'prompt' ? m.common.copied : m.common.copy}
 						</button>
 					{/if}
 				</div>
@@ -178,50 +191,53 @@
 						<ClampedText text={item.prompt} />
 					{/key}
 				{:else}
-					<p class="prompt empty">Aucun prompt enregistré dans le sidecar.</p>
+					<p class="prompt empty">{m.lightbox.noPrompt}</p>
 				{/if}
 				{#if item.meta.negative_prompt}
-					<h3>Prompt négatif</h3>
+					<h3>{m.lightbox.negativePrompt}</h3>
 					<p class="prompt negative">{item.meta.negative_prompt}</p>
 				{/if}
 			</section>
 
 			<dl class="facts">
-				<div><dt>Modèle</dt><dd>{item.model ?? '—'}</dd></div>
-				<div><dt>Service</dt><dd>{item.service ?? '—'}</dd></div>
-				<div><dt>Type</dt><dd>{item.kind === 'video' ? 'Vidéo' : 'Image'} · {item.ext}</dd></div>
-				<div><dt>Dimensions</dt><dd>{formatDimensions(item.width, item.height)}</dd></div>
-				{#if item.kind === 'video'}
-					<div><dt>Durée</dt><dd>{formatDuration(item.duration)}</dd></div>
-				{/if}
-				<div><dt>Poids</dt><dd>{formatBytes(item.bytes)}</dd></div>
+				<div><dt>{m.lightbox.model}</dt><dd>{item.model ?? '—'}</dd></div>
+				<div><dt>{m.lightbox.service}</dt><dd>{item.service ?? '—'}</dd></div>
 				<div>
-					<dt>Coût estimé</dt>
+					<dt>{m.lightbox.type}</dt>
+					<dd>{item.kind === 'video' ? m.lightbox.video : m.lightbox.image} · {item.ext}</dd>
+				</div>
+				<div><dt>{m.lightbox.dimensions}</dt><dd>{formatDimensions(item.width, item.height)}</dd></div>
+				{#if item.kind === 'video'}
+					<div><dt>{m.lightbox.duration}</dt><dd>{formatDuration(item.duration)}</dd></div>
+				{/if}
+				<div><dt>{m.lightbox.size}</dt><dd>{formatBytes(item.bytes)}</dd></div>
+				<div>
+					<dt>{m.lightbox.cost}</dt>
 					<dd class="cost">
 						{formatCost(item.cost, item.currency)}
 						{#if cost?.converted}
-							<span class="source-amount" title="Montant facturé par le service, converti à titre indicatif">
-								converti de {formatMoney(cost.source, cost.sourceCurrency)}
+							<span class="source-amount" title={m.lightbox.convertedTitle}>
+								{m.lightbox.convertedFrom(formatMoney(cost.source, cost.sourceCurrency))}
 							</span>
 						{:else if cost && cost.eur === null}
 							<span class="source-amount warn-text">
-								devise {cost.sourceCurrency} sans taux de conversion
+								{m.lightbox.noRate(cost.sourceCurrency)}
 							</span>
 						{/if}
 					</dd>
 				</div>
 				<div>
-					<dt>Date</dt>
+					<dt>{m.lightbox.date}</dt>
 					<dd><span title={formatDate(item.createdAt)}>{formatRelative(item.createdAt)}</span></dd>
 				</div>
 				{#if item.seed}
-					<div><dt>Seed</dt><dd class="mono">{item.seed}</dd></div>
+					<div><dt>{m.lightbox.seed}</dt><dd class="mono">{item.seed}</dd></div>
 				{/if}
 			</dl>
 
 			{#if item.tags.length}
 				<section>
-					<h2>Tags</h2>
+					<h2>{m.lightbox.tags}</h2>
 					<div class="tags">
 						{#each item.tags as tag (tag)}
 							<button
@@ -239,7 +255,7 @@
 
 			{#if item.notes}
 				<section>
-					<h2>Notes</h2>
+					<h2>{m.lightbox.notes}</h2>
 					{#key item.id}
 						<ClampedText text={item.notes} lines={5} />
 					{/key}
@@ -248,7 +264,7 @@
 
 			{#if extras.length}
 				<section>
-					<h2>Autres métadonnées</h2>
+					<h2>{m.lightbox.extras}</h2>
 					<dl class="facts extra">
 						{#each extras as [key, value] (key)}
 							<!-- Un `_` n'est pas un point de coupure : on en ajoute un après
@@ -263,27 +279,24 @@
 			{/if}
 
 			<section class="file">
-				<h2>Fichier</h2>
-				<button type="button" class="path" onclick={() => copy('path', item.file)} title="Copier le chemin">
+				<h2>{m.lightbox.file}</h2>
+				<button type="button" class="path" onclick={() => copy('path', item.file)} title={m.lightbox.copyPath}>
 					<span class="mono">generations/{item.file}</span>
-					<em>{copied === 'path' ? 'copié' : 'copier'}</em>
+					<em>{copied === 'path' ? m.common.copied : m.common.copy}</em>
 				</button>
 				{#if item.sidecar}
 					<p class="sidecar mono">↳ {item.sidecar}</p>
 				{:else}
-					<p class="sidecar warn">Aucun fichier de métadonnées associé.</p>
+					<p class="sidecar warn">{m.lightbox.noSidecar}</p>
 				{/if}
 				{#if item.metaError}
-					<p class="sidecar warn">Sidecar illisible : {item.metaError}</p>
+					<p class="sidecar warn">{m.lightbox.badSidecar(item.metaError)}</p>
 				{/if}
-				<a class="open" href={item.url} target="_blank" rel="noreferrer">Ouvrir le fichier brut ↗</a>
+				<a class="open" href={item.url} target="_blank" rel="noreferrer">{m.lightbox.openRaw}</a>
 
 				<div class="danger-zone">
 					{#if confirmingDelete}
-						<p class="danger-question">
-							Supprimer définitivement ce fichier{item.sidecar ? ' et son sidecar' : ''} ?
-							Cette action est irréversible.
-						</p>
+						<p class="danger-question">{m.lightbox.confirmDelete(item.sidecar !== null)}</p>
 						<div class="danger-actions">
 							<button
 								type="button"
@@ -291,10 +304,10 @@
 								disabled={gallery.deleting === item.id}
 								onclick={() => gallery.remove(item.id)}
 							>
-								{gallery.deleting === item.id ? 'Suppression…' : 'Supprimer'}
+								{gallery.deleting === item.id ? m.lightbox.deleting : m.lightbox.delete}
 							</button>
 							<button type="button" class="ghost" onclick={() => (confirmingDelete = false)}>
-								Annuler
+								{m.lightbox.cancel}
 							</button>
 						</div>
 					{:else}
@@ -302,12 +315,12 @@
 							<svg viewBox="0 0 24 24" aria-hidden="true"
 								><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" /></svg
 							>
-							Supprimer ce média
+							{m.lightbox.deleteTrigger}
 						</button>
 					{/if}
 
-					{#if gallery.deleteError}
-						<p class="sidecar warn">Échec de la suppression : {gallery.deleteError}</p>
+					{#if deleteError}
+						<p class="sidecar warn" title={gallery.deleteError?.message}>{deleteError}</p>
 					{/if}
 				</div>
 			</section>

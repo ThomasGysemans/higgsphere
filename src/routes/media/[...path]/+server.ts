@@ -50,7 +50,7 @@ export const GET: RequestHandler = async ({ params, request, setHeaders }) => {
 	if (!kindFor(relative)) throw error(415, 'Unsupported media type');
 
 	const absolute = resolveInsideGenerations(relative);
-	if (!absolute) throw error(403, 'Chemin hors du dossier generations');
+	if (!absolute) throw error(403, 'Path is outside the generations folder');
 
 	let stats;
 	try {

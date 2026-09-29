@@ -30,6 +30,10 @@ export const GET: RequestHandler = async () => {
  * La suppression est irréversible — le fichier ne passe pas par la corbeille —
  * donc l'interface demande une confirmation explicite avant d'appeler cette route.
  *
+ * Les messages d'erreur sont des diagnostics en anglais. Ceux qu'on peut
+ * atteindre depuis l'interface portent un `code` que le client traduit : le
+ * serveur ne connaît pas la langue choisie, et n'a pas à la connaître.
+ *
  * La **dépense**, elle, survit : le coût, la date et le fournisseur sont archivés
  * dans le journal avant que quoi que ce soit ne soit effacé. Sans cela, effacer
  * un média reviendrait à effacer l'argent qu'il a coûté.
@@ -39,26 +43,26 @@ export const DELETE: RequestHandler = async ({ request }) => {
 	try {
 		payload = await request.json();
 	} catch {
-		throw error(400, 'Corps JSON attendu');
+		throw error(400, 'Expected a JSON body');
 	}
 
 	const file = (payload as { file?: unknown })?.file;
 	if (typeof file !== 'string' || !file.trim()) {
-		throw error(400, 'Champ « file » manquant');
+		throw error(400, 'Missing "file" field');
 	}
 	// Seul un média est supprimable : un sidecar seul n'est jamais une cible.
 	if (!kindFor(file)) {
-		throw error(400, 'Seuls les médias peuvent être supprimés');
+		throw error(400, 'Only media files can be deleted');
 	}
 
 	const absolute = resolveInsideGenerations(file);
 	if (!absolute) {
-		throw error(403, 'Chemin hors du dossier generations');
+		throw error(403, 'Path is outside the generations folder');
 	}
 
 	const stats = await stat(absolute).catch(() => null);
 	if (!stats?.isFile()) {
-		throw error(404, `Introuvable : ${file}`);
+		throw error(404, { message: `Not found: ${file}`, code: 'not_found' });
 	}
 
 	// Archivage d'abord : une dépense doit être inscrite avant que sa preuve
@@ -69,10 +73,10 @@ export const DELETE: RequestHandler = async ({ request }) => {
 		try {
 			rollback = await recordDeletion(item);
 		} catch (cause) {
-			throw error(
-				500,
-				`Suppression annulée : la dépense n'a pas pu être archivée (${(cause as Error).message}). Le fichier est intact.`
-			);
+			throw error(500, {
+				message: `Delete cancelled, the spend could not be recorded (${(cause as Error).message}). The file is untouched.`,
+				code: 'ledger_failed'
+			});
 		}
 	}
 
@@ -84,7 +88,10 @@ export const DELETE: RequestHandler = async ({ request }) => {
 		// Le média est toujours là : son coût est encore compté dans le mur, il ne
 		// doit donc pas l'être une seconde fois dans le journal.
 		await rollback?.();
-		throw error(500, `Suppression impossible : ${(cause as Error).message}`);
+		throw error(500, {
+			message: `Could not delete: ${(cause as Error).message}`,
+			code: 'unlink_failed'
+		});
 	}
 
 	// Le sidecar suit le média ; son absence n'est pas une erreur.

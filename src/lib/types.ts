@@ -1,6 +1,19 @@
 export type MediaKind = 'image' | 'video';
 
 /**
+ * Échecs de `DELETE /api/generations` qu'un utilisateur peut réellement
+ * rencontrer depuis l'interface. Le serveur renvoie ce code avec un message
+ * technique en anglais ; le client affiche la phrase traduite correspondante.
+ */
+export type DeleteErrorCode = 'not_found' | 'ledger_failed' | 'unlink_failed';
+
+export interface DeleteError {
+	code: DeleteErrorCode | null;
+	/** Message brut du serveur : sert de repli, et de détail technique. */
+	message: string;
+}
+
+/**
  * Forme d'un fichier `.json` compagnon posé à côté d'un média généré.
  * Tous les champs sont optionnels : un média sans sidecar apparaît quand même
  * dans la galerie, il porte simplement moins d'informations.

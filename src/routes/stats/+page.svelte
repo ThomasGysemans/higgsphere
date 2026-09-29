@@ -1,16 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { spend, UNKNOWN_SERVICE } from '$lib/spend.svelte';
+	import { spend, serviceOf } from '$lib/spend.svelte';
 	import {
 		formatCost,
 		formatDate,
 		formatDay,
 		formatDuration,
 		formatEur,
+		formatPercent,
 		formatRelative,
 		formatTime
 	} from '$lib/format';
+	import { i18n } from '$lib/i18n/index.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
+	import Rich from '$lib/components/Rich.svelte';
+
+	const m = $derived(i18n.m);
+
+	/** Les clés « inconnu » sont des chaînes vides : le libellé vient du dictionnaire. */
+	const serviceName = (service: string) => service || m.stats.unknownService;
+	const modelName = (model: string) => model || m.stats.unknownModel;
 
 	/** Filet de sécurité identique au mur : si le canal SSE tombe, on interroge. */
 	const POLL_MS = 15_000;
@@ -38,61 +48,58 @@
 	});
 </script>
 
-<svelte:head><title>Dépenses · higgsphere</title></svelte:head>
+<svelte:head><title>{m.stats.pageTitle}</title></svelte:head>
 
 <header class="bar">
 	<div class="row">
 		<div class="brand">
 			<Logo live={spend.live} />
-			<h1>Dépenses</h1>
+			<h1>{m.stats.title}</h1>
 		</div>
 		<a class="back" href="/">
 			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
-			Le mur
+			{m.stats.back}
 		</a>
+		<LanguagePicker />
 	</div>
 </header>
 
 <main>
 	{#if spend.status === 'loading'}
-		<p class="state">Lecture des dépenses…</p>
+		<p class="state">{m.stats.loading}</p>
 	{:else if spend.status === 'error'}
 		<div class="state error">
-			<h2>Impossible de lire les dépenses</h2>
+			<h2>{m.stats.errorTitle}</h2>
 			<p>{spend.error}</p>
-			<button type="button" onclick={() => spend.refresh()}>Réessayer</button>
+			<button type="button" onclick={() => spend.refresh()}>{m.common.retry}</button>
 		</div>
 	{:else if spend.entries.length === 0}
 		<div class="state">
-			<h2>Aucune dépense enregistrée</h2>
-			<p>
-				Chaque génération déposée dans <code>generations/</code> avec un champ
-				<code>cost</code> dans son sidecar apparaîtra ici — et y restera même après la suppression
-				du média.
-			</p>
+			<h2>{m.stats.emptyTitle}</h2>
+			<p><Rich text={m.stats.emptyBody} /></p>
 		</div>
 	{:else}
 		<!-- Vue d'ensemble -->
 		<section class="tiles">
 			<div class="tile">
-				<h2>Total dépensé</h2>
+				<h2>{m.stats.totalSpent}</h2>
 				<p class="figure">{formatEur(spend.totals.eur)}</p>
 				<p class="sub">
-					{spend.totals.count} génération{spend.totals.count > 1 ? 's' : ''}
+					{m.stats.generations(spend.totals.count)}
 					{#if spend.totals.first}
-						· depuis le {formatDay(spend.totals.first)}
+						· {m.stats.since(formatDay(spend.totals.first))}
 					{/if}
 				</p>
 			</div>
 
 			<div class="tile">
-				<h2>Coût moyen</h2>
+				<h2>{m.stats.averageCost}</h2>
 				<p class="figure">{formatEur(spend.totals.average)}</p>
-				<p class="sub">par génération dont le coût est connu</p>
+				<p class="sub">{m.stats.averageSub}</p>
 			</div>
 
 			<div class="tile">
-				<h2>Dernière dépense</h2>
+				<h2>{m.stats.lastSpend}</h2>
 				<p class="figure small">
 					{spend.totals.last ? formatRelative(spend.totals.last) : '—'}
 				</p>
@@ -103,12 +110,12 @@
 		{#if spend.totals.withoutCost || spend.totals.unconvertible}
 			<p class="caveat">
 				{#if spend.totals.withoutCost}
-					{spend.totals.withoutCost} génération(s) sans coût renseigné.
+					{m.stats.withoutCost(spend.totals.withoutCost)}
 				{/if}
 				{#if spend.totals.unconvertible}
-					{spend.totals.unconvertible} montant(s) dans une devise sans taux connu, exclus du total.
+					{m.stats.unconvertible(spend.totals.unconvertible)}
 				{/if}
-				Le total ne compte que ce qu'il peut convertir.
+				{m.stats.caveatEnd}
 			</p>
 		{/if}
 
@@ -124,31 +131,31 @@
 						onclick={() => spend.toggleService(service)}
 					>
 						<span class="dot" style:background={spend.colorOf(service)}></span>
-						{service}
+						{serviceName(service)}
 					</button>
 				{/each}
 			</div>
 			{#if spend.services.length}
-				<button type="button" class="clear" onclick={() => spend.reset()}>réinitialiser</button>
+				<button type="button" class="clear" onclick={() => spend.reset()}>{m.common.reset}</button>
 			{/if}
 		</section>
 
 		{#if spend.filtered.length === 0}
 			<div class="state">
-				<h2>Aucune dépense</h2>
-				<p>Aucune dépense ne correspond à cette sélection.</p>
-				<button type="button" onclick={() => spend.reset()}>Réinitialiser</button>
+				<h2>{m.stats.noMatchTitle}</h2>
+				<p>{m.stats.noMatchBody}</p>
+				<button type="button" onclick={() => spend.reset()}>{m.stats.resetButton}</button>
 			</div>
 		{:else}
 			<!-- Chronologie -->
 			<section class="block">
 				<div class="block-head">
-					<h2>Chronologie</h2>
+					<h2>{m.stats.timeline}</h2>
 					<span class="hint">
-						{spend.granularity === 'month' ? 'par mois' : 'par jour'} · plus ancien à gauche
+						{spend.granularity === 'month' ? m.stats.byMonth : m.stats.byDay} · {m.stats.oldestLeft}
 					</span>
 				</div>
-				<div class="chart" role="img" aria-label="Dépenses au fil du temps">
+				<div class="chart" role="img" aria-label={m.stats.chartLabel}>
 					{#each spend.buckets as bucket (bucket.key)}
 						<div class="col" title="{bucket.label} — {formatEur(bucket.eur)} ({bucket.count})">
 							<div class="stack" style:height="{barHeight(bucket.eur)}%">
@@ -160,7 +167,7 @@
 									></div>
 								{/each}
 							</div>
-							<span class="tick">{bucket.label.replace(/\s\d{4}$/, '')}</span>
+							<span class="tick">{bucket.tick}</span>
 						</div>
 					{/each}
 				</div>
@@ -169,29 +176,27 @@
 			<!-- Par fournisseur -->
 			<section class="block">
 				<div class="block-head">
-					<h2>Par fournisseur</h2>
-					<span class="hint">{spend.byProvider.length} fournisseur(s)</span>
+					<h2>{m.stats.byProvider}</h2>
+					<span class="hint">{m.stats.providers(spend.byProvider.length)}</span>
 				</div>
 				<div class="providers">
 					{#each spend.byProvider as provider (provider.service)}
 						<article class="provider" style:--tint={provider.color}>
 							<header>
 								<span class="dot" style:background={provider.color}></span>
-								<h3>{provider.service}</h3>
+								<h3>{serviceName(provider.service)}</h3>
 								<strong>{formatEur(provider.eur)}</strong>
 							</header>
 							<div class="share"><span style:width="{provider.share * 100}%"></span></div>
 							<p class="sub">
-								{Math.round(provider.share * 100)} % du total ·
-								{provider.count} génération{provider.count > 1 ? 's' : ''}
-								{#if provider.deleted}· {provider.deleted} supprimée{provider.deleted > 1
-										? 's'
-										: ''}{/if}
+								{m.stats.shareOfTotal(formatPercent(provider.share))} ·
+								{m.stats.generations(provider.count)}
+								{#if provider.deleted}· {m.stats.deleted(provider.deleted)}{/if}
 							</p>
 							<ul class="models">
 								{#each provider.models as model (model.model)}
 									<li>
-										<span class="name">{model.model}</span>
+										<span class="name">{modelName(model.model)}</span>
 										<span class="count">×{model.count}</span>
 										<span class="amount">{formatEur(model.eur)}</span>
 									</li>
@@ -200,10 +205,10 @@
 							<p class="range">
 								{formatDay(provider.first)} → {formatDay(provider.last)}
 								{#if provider.withoutCost}
-									<em>· {provider.withoutCost} sans coût</em>
+									<em>· {m.stats.withoutCostShort(provider.withoutCost)}</em>
 								{/if}
 								{#if provider.unconvertible}
-									<em class="warn">· {provider.unconvertible} non converti(s)</em>
+									<em class="warn">· {m.stats.notConverted(provider.unconvertible)}</em>
 								{/if}
 							</p>
 						</article>
@@ -214,8 +219,8 @@
 			<!-- Journal -->
 			<section class="block">
 				<div class="block-head">
-					<h2>Journal</h2>
-					<span class="hint">plus récent d'abord</span>
+					<h2>{m.stats.journal}</h2>
+					<span class="hint">{m.stats.newestFirst}</span>
 				</div>
 				{#each journal as bucket (bucket.key)}
 					<div class="day">
@@ -227,23 +232,22 @@
 						<ul class="rows">
 							{#each bucket.entries as entry (entry.id)}
 								<li class:deleted={entry.deletedAt !== null}>
-									<span class="swatch" style:background={spend.colorOf(entry.service ?? UNKNOWN_SERVICE)}
-									></span>
+									<span class="swatch" style:background={spend.colorOf(serviceOf(entry))}></span>
 									<span class="time">{formatTime(entry.createdAt)}</span>
 									<span class="media">
 										{#if entry.url}
 											<a href={entry.url} target="_blank" rel="noreferrer">{entry.name}</a>
 										{:else}
-											<span class="gone" title="Média supprimé le {formatDate(entry.deletedAt!)}"
+											<span class="gone" title={m.stats.deletedOn(formatDate(entry.deletedAt!))}
 												>{entry.name}</span
 											>
 										{/if}
-										{#if entry.deletedAt !== null}<em class="badge">supprimé</em>{/if}
+										{#if entry.deletedAt !== null}<em class="badge">{m.stats.deletedBadge}</em>{/if}
 									</span>
-									<span class="who">{entry.service ?? UNKNOWN_SERVICE}</span>
+									<span class="who">{serviceName(serviceOf(entry))}</span>
 									<span class="what">{entry.model ?? '—'}</span>
 									<span class="meta">
-										{entry.kind === 'video' ? formatDuration(entry.duration) : 'image'}
+										{entry.kind === 'video' ? formatDuration(entry.duration) : m.stats.image}
 									</span>
 									<span class="price">{formatCost(entry.cost, entry.currency)}</span>
 								</li>
@@ -254,15 +258,12 @@
 			</section>
 		{/if}
 
-		<p class="ledger">
-			Chaque génération est inscrite dans <code>{spend.ledger}</code> dès son apparition : son
-			prix reste compté ici même après la suppression du média.
-		</p>
+		<p class="ledger"><Rich text={m.stats.ledgerNote(spend.ledger)} /></p>
 	{/if}
 
 	{#if spend.warnings.length}
 		<details class="warnings">
-			<summary>{spend.warnings.length} avertissement(s) de lecture</summary>
+			<summary>{m.common.readWarnings(spend.warnings.length)}</summary>
 			<ul>
 				{#each spend.warnings as warning (warning)}
 					<li>{warning}</li>
@@ -378,7 +379,7 @@
 		color: var(--warn);
 	}
 
-	code {
+	main :global(code) {
 		font-family: var(--mono);
 		font-size: 11.5px;
 		color: var(--text-dim);
@@ -805,7 +806,7 @@
 		color: var(--text-faint);
 	}
 
-	.ledger code {
+	.ledger :global(code) {
 		overflow-wrap: anywhere;
 	}
 

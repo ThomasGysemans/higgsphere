@@ -4,6 +4,10 @@
 	import FilterPanel from '$lib/components/FilterPanel.svelte';
 	import Masonry from '$lib/components/Masonry.svelte';
 	import Lightbox from '$lib/components/Lightbox.svelte';
+	import Rich from '$lib/components/Rich.svelte';
+	import { i18n } from '$lib/i18n/index.svelte';
+
+	const m = $derived(i18n.m);
 
 	/** Filet de sécurité : si le canal SSE tombe, on se rabat sur du polling. */
 	const POLL_MS = 15_000;
@@ -26,20 +30,17 @@
 
 <main>
 	{#if gallery.status === 'loading'}
-		<p class="state">Lecture du dossier <code>generations/</code>…</p>
+		<p class="state"><Rich text={m.wall.loading} /></p>
 	{:else if gallery.status === 'error'}
 		<div class="state error">
-			<h2>Impossible de lire l'index</h2>
+			<h2>{m.wall.errorTitle}</h2>
 			<p>{gallery.error}</p>
-			<button type="button" onclick={() => gallery.refresh()}>Réessayer</button>
+			<button type="button" onclick={() => gallery.refresh()}>{m.common.retry}</button>
 		</div>
 	{:else if gallery.items.length === 0}
 		<div class="state onboarding">
-			<h2>Le mur est vide</h2>
-			<p>
-				Déposez vos images et vidéos générées dans <code>generations/</code>, avec un fichier
-				<code>.json</code> du même nom à côté. Elles apparaîtront ici sans rechargement.
-			</p>
+			<h2>{m.wall.emptyTitle}</h2>
+			<p><Rich text={m.wall.emptyBody} /></p>
 			<pre><code>{`generations/
   2026-08-31-nebula.png
   2026-08-31-nebula.json`}</code></pre>
@@ -49,9 +50,9 @@
 		</div>
 	{:else if gallery.filtered.length === 0}
 		<div class="state">
-			<h2>Aucun résultat</h2>
-			<p>Aucune génération ne correspond à cette recherche.</p>
-			<button type="button" onclick={() => gallery.resetFilters()}>Réinitialiser les filtres</button>
+			<h2>{m.wall.noResultsTitle}</h2>
+			<p>{m.wall.noResultsBody}</p>
+			<button type="button" onclick={() => gallery.resetFilters()}>{m.wall.resetFilters}</button>
 		</div>
 	{:else}
 		<Masonry items={gallery.filtered} />
@@ -59,7 +60,7 @@
 
 	{#if gallery.warnings.length}
 		<details class="warnings">
-			<summary>{gallery.warnings.length} avertissement(s) de lecture</summary>
+			<summary>{m.common.readWarnings(gallery.warnings.length)}</summary>
 			<ul>
 				{#each gallery.warnings as warning (warning)}
 					<li>{warning}</li>
@@ -98,7 +99,7 @@
 		line-height: 1.65;
 	}
 
-	.state code {
+	.state :global(code) {
 		font-family: var(--mono);
 		font-size: 12.5px;
 		color: var(--text);

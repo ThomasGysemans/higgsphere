@@ -1,4 +1,11 @@
 import { DISPLAY_CURRENCY, toEur } from './currency';
+import { i18n } from './i18n/index.svelte';
+
+/*
+ * Toutes les mises en forme suivent la langue de l'interface : lue ici, dans
+ * un template ou un `$derived`, `i18n.locale` rend l'affichage réactif au
+ * changement de langue. La devise, elle, ne change pas : tout reste en euros.
+ */
 
 export function formatBytes(bytes: number): string {
 	if (!Number.isFinite(bytes) || bytes <= 0) return '—';
@@ -18,7 +25,7 @@ export function formatMoney(amount: number | null, currency = DISPLAY_CURRENCY):
 	// précision sur les petites valeurs.
 	const digits = amount !== 0 && Math.abs(amount) < 0.01 ? 4 : amount < 1 ? 3 : 2;
 	try {
-		return new Intl.NumberFormat('fr-FR', {
+		return new Intl.NumberFormat(i18n.locale, {
 			style: 'currency',
 			currency,
 			minimumFractionDigits: digits,
@@ -55,7 +62,7 @@ export function formatDuration(seconds: number | null): string {
 }
 
 export function formatDate(epochMs: number): string {
-	return new Intl.DateTimeFormat('fr-FR', {
+	return new Intl.DateTimeFormat(i18n.locale, {
 		dateStyle: 'medium',
 		timeStyle: 'short'
 	}).format(new Date(epochMs));
@@ -76,7 +83,7 @@ export function formatRelative(epochMs: number): string {
 	let value = deltaSeconds;
 	for (const [unit, size] of steps) {
 		if (Math.abs(value) < size) {
-			return new Intl.RelativeTimeFormat('fr-FR', { numeric: 'auto' }).format(
+			return new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto' }).format(
 				Math.round(value),
 				unit
 			);
@@ -84,6 +91,13 @@ export function formatRelative(epochMs: number): string {
 		value /= size;
 	}
 	return formatDate(epochMs);
+}
+
+/** Part entre 0 et 1, arrondie à l'unité (« 12 % » en français, « 12% » en anglais). */
+export function formatPercent(share: number): string {
+	return new Intl.NumberFormat(i18n.locale, { style: 'percent', maximumFractionDigits: 0 }).format(
+		share
+	);
 }
 
 export function formatDimensions(width: number | null, height: number | null): string {
@@ -98,11 +112,11 @@ export function formatDimensions(width: number | null, height: number | null): s
  * voulu.
  */
 export function formatDay(epochMs: number): string {
-	return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(epochMs));
+	return new Intl.DateTimeFormat(i18n.locale, { dateStyle: 'medium' }).format(new Date(epochMs));
 }
 
 export function formatTime(epochMs: number): string {
-	return new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(
+	return new Intl.DateTimeFormat(i18n.locale, { hour: '2-digit', minute: '2-digit' }).format(
 		new Date(epochMs)
 	);
 }

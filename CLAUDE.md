@@ -267,6 +267,10 @@ d'environnement `GENERATIONS_DIR` (chemin absolu).
 | [src/routes/api/generations/stream/+server.ts](src/routes/api/generations/stream/+server.ts) | Flux SSE de détection des changements (`fs.watch` + anti-rebond). |
 | [src/routes/media/\[...path\]/+server.ts](src/routes/media/[...path]/+server.ts) | Sert les fichiers, avec support des requêtes `Range` (indispensable aux vidéos). |
 | [src/lib/currency.ts](src/lib/currency.ts) | Devise d'affichage, table de taux vers l'euro, conversion. |
+| [src/lib/i18n/index.svelte.ts](src/lib/i18n/index.svelte.ts) | Langues disponibles (`LOCALES`), détection, store réactif `i18n`. |
+| [src/lib/i18n/en.ts](src/lib/i18n/en.ts) | Dictionnaire de référence : son type (`Messages`) est le contrat des autres langues. |
+| [src/lib/components/LanguagePicker.svelte](src/lib/components/LanguagePicker.svelte) | Sélecteur de langue, présent dans l'en-tête de chaque page. |
+| [src/lib/components/Rich.svelte](src/lib/components/Rich.svelte) | Rend en `<code>` les segments entre accents graves d'une traduction. |
 | [src/lib/gallery.svelte.ts](src/lib/gallery.svelte.ts) | État client : index, recherche, filtres, tri, sélection. |
 | [src/lib/spend.svelte.ts](src/lib/spend.svelte.ts) | État client des dépenses : agrégats par fournisseur, par modèle, par période. |
 | [src/lib/components/Masonry.svelte](src/lib/components/Masonry.svelte) | Répartition en colonnes (4 → 3 → 2 → 1). |
@@ -279,8 +283,23 @@ d'environnement `GENERATIONS_DIR` (chemin absolu).
 
 - **Svelte 5 en mode runes** (`$state`, `$derived`, `$props`, `$effect`). Pas de syntaxe
   legacy : les événements s'écrivent `onclick`, pas `on:click`.
-- **Commentaires et textes d'interface en français.** Les identifiants, noms de champs
-  JSON et termes techniques restent en anglais.
+- **Commentaires en français.** Les identifiants, noms de champs JSON et termes
+  techniques restent en anglais.
+- **Aucun texte d'interface en dur.** Tout libellé visible (y compris `title`,
+  `aria-label`, `placeholder`) vit dans les dictionnaires de
+  [src/lib/i18n/](src/lib/i18n/) et se lit via `i18n.m`. Un nouveau texte s'ajoute
+  d'abord à `en.ts`, puis à **chaque** autre langue : `npm run check` échoue tant qu'une
+  clé manque. Un texte qui dépend d'une valeur est une fonction ; un pluriel passe par
+  `plural()` (jamais `n > 1`) ; du code en ligne s'écrit entre accents graves et se rend
+  avec `Rich` — jamais de HTML dans une traduction.
+- **Les mises en forme suivent la langue.** Dates, nombres et pourcentages passent par
+  [src/lib/format.ts](src/lib/format.ts), qui lit `i18n.locale` ; n'écrivez jamais un
+  `Intl.*('fr-FR')` en dur.
+- **Les messages du serveur sont en anglais.** Ce sont des diagnostics. Une erreur qu'un
+  utilisateur peut rencontrer porte en plus un `code` (voir `App.Error`), traduit côté
+  client.
+- **Le README existe en trois langues** (`README.md`, `README.fr.md`, `README.es.md`).
+  Toute modification de l'un se reporte dans les deux autres.
 - **SSR désactivé** ([src/routes/+layout.ts](src/routes/+layout.ts)) : l'outil lit le
   disque à la demande, et le rendu client évite de partager le store entre requêtes.
   Conséquence : le navigateur reçoit un document vide, donc
@@ -323,6 +342,11 @@ Ces points sont des exigences produit, pas des détails d'implémentation :
   entre plusieurs postes fantômes.
 - **Le bouton « copier » du prompt n'apparaît que s'il y a un prompt.** Plus généralement,
   aucune action ne doit être proposée sur une donnée absente.
+- **Seule l'interface est traduite, jamais les données.** Prompt, notes, tags, modèle,
+  fournisseur, noms de fichiers et métadonnées libres s'affichent tels qu'écrits dans le
+  sidecar. Une clé de regroupement ne doit jamais être un libellé traduit : le fournisseur
+  inconnu est la clé `''`, et son nom (« Fournisseur inconnu »…) n'est résolu qu'au rendu —
+  sinon changer de langue changerait les couleurs et viderait les filtres.
 - **Les montants s'affichent en euros, la donnée reste dans sa devise d'origine.** Un total
   ne doit jamais additionner des devises différentes, ni inclure un montant qu'aucun taux
   ne permet de convertir sans le signaler.

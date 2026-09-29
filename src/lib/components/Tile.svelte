@@ -2,6 +2,7 @@
 	import type { GenerationItem } from '$lib/types';
 	import { gallery } from '$lib/gallery.svelte';
 	import { formatDuration } from '$lib/format';
+	import { i18n } from '$lib/i18n/index.svelte';
 
 	interface Props {
 		item: GenerationItem;
@@ -56,7 +57,7 @@
 	onpointerleave={onLeave}
 	onfocus={onEnter}
 	onblur={onLeave}
-	aria-label={item.prompt ? `Ouvrir : ${item.prompt.slice(0, 80)}` : `Ouvrir ${item.name}`}
+	aria-label={i18n.m.tile.open(item.prompt ? item.prompt.slice(0, 80) : item.name)}
 >
 	<div class="frame">
 		{#if item.kind === 'video'}
@@ -93,7 +94,7 @@
 		</div>
 	</div>
 
-	{#if fresh}<span class="flag">nouveau</span>{/if}
+	{#if fresh}<span class="flag">{i18n.m.tile.fresh}</span>{/if}
 </button>
 
 <style>
