@@ -6,6 +6,8 @@ A local gallery for every image and video you generate with AI: newest first, ea
 to the exact prompt, model and cost that produced it. This repo comes with Claude skills to
 optimise the generation process.
 
+![The wall: every generation in a masonry grid, newest first](screenshots/wall.jpg)
+
 ## Why
 
 AI media ends up scattered across provider dashboards, download folders and chat
@@ -59,6 +61,8 @@ New files show up on the wall within a second, with no reload or restart. Every 
 optional, and subfolders are fine. The full schema is in [AGENTS.md](AGENTS.md), which
 coding agents read automatically, so they write these files correctly without being told.
 
+![A generation opened in the lightbox, next to its prompt, cost and metadata](screenshots/lightbox.jpg)
+
 ### The spend ledger
 
 `generations/.higgsphere-ledger.jsonl` records everything you have paid for. A generation
@@ -69,6 +73,8 @@ reads the ledger to show spending over time, by provider and by model.
 
 The ledger is append-only and committed to git. It's the one file in the folder that
 can't be rebuilt from the others.
+
+![The Spend page: totals, timeline, providers and log](screenshots/spend.png)
 
 ### Currencies
 

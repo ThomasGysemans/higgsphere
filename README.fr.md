@@ -6,6 +6,8 @@ Une galerie locale pour toutes les images et vidéos que vous générez avec l'I
 récentes en premier, chacune à côté du prompt exact, du modèle et du coût qui l'ont
 produite. Le dépôt fournit aussi des skills Claude pour optimiser la génération.
 
+![Le mur : toutes les générations en grille masonry, les plus récentes en premier](screenshots/wall.jpg)
+
 ## Pourquoi
 
 Les médias IA finissent éparpillés entre les tableaux de bord des fournisseurs, les
@@ -62,6 +64,8 @@ redémarrage. Tous les champs sont optionnels, et les sous-dossiers sont accept�
 schéma complet est dans [AGENTS.md](AGENTS.md), que les agents de code lisent
 automatiquement : ils écrivent donc ces fichiers correctement sans qu'on le leur dise.
 
+![Une génération ouverte dans la visionneuse, à côté de son prompt, de son coût et de ses métadonnées](screenshots/lightbox.jpg)
+
 ### Le journal des dépenses
 
 `generations/.higgsphere-ledger.jsonl` enregistre tout ce que vous avez payé. Une
@@ -73,6 +77,8 @@ fournisseur et par modèle.
 
 Le journal est en ajout seul et versionné dans git. C'est le seul fichier du dossier
 qu'aucun autre ne permet de reconstruire.
+
+![La page Dépenses : totaux, chronologie, fournisseurs et historique](screenshots/spend.png)
 
 ### Devises
 

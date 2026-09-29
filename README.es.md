@@ -6,6 +6,8 @@ Una galería local para todas las imágenes y vídeos que generas con IA: lo má
 primero, cada uno junto al prompt exacto, el modelo y el coste que lo produjeron. El
 repositorio incluye skills de Claude para optimizar el proceso de generación.
 
+![El muro: todas las generaciones en una cuadrícula masonry, lo más reciente primero](screenshots/wall.jpg)
+
 ## Por qué
 
 Los medios generados con IA acaban repartidos entre los paneles de los proveedores, las
@@ -63,6 +65,8 @@ Todos los campos son opcionales y se admiten subcarpetas. El esquema completo es
 [AGENTS.md](AGENTS.md), que los agentes de código leen automáticamente, así que escriben
 estos archivos correctamente sin que haga falta pedírselo.
 
+![Una generación abierta en el visor, junto a su prompt, su coste y sus metadatos](screenshots/lightbox.jpg)
+
 ### El historial de gastos
 
 `generations/.higgsphere-ledger.jsonl` registra todo lo que has pagado. Una generación se
@@ -73,6 +77,8 @@ historial para mostrar el gasto a lo largo del tiempo, por proveedor y por model
 
 El historial solo admite añadidos y se versiona en git. Es el único archivo de la carpeta
 que no puede reconstruirse a partir de los demás.
+
+![La página Gastos: totales, cronología, proveedores y registro](screenshots/spend.png)
 
 ### Monedas
 
