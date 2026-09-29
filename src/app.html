@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="text-scale" content="scale" />
+
+		<!--
+			Le rendu est exclusivement client : le navigateur reçoit un document vide
+			et peint son canevas par défaut — blanc — avant que le bundle CSS
+			n'arrive. Ces deux lignes le peignent sombre dès la première frame.
+			Elles sont placées avant le placeholder de tête pour qu'app.css reste
+			prioritaire — et ce commentaire ne doit surtout pas contenir ce
+			placeholder : SvelteKit n'en substitue que la première occurrence.
+		-->
+		<meta name="color-scheme" content="dark" />
+		<style>
+			html {
+				background: #08080a;
+			}
+		</style>
+
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

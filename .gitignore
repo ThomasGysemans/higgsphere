@@ -1,0 +1,40 @@
+node_modules
+/.vscode
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Générations — médias binaires, potentiellement volumineux.
+# Supprimez ces lignes si vous voulez versionner votre galerie.
+/inspiration/*
+/generations/*
+!/generations/.gitkeep
+# ...sauf le journal des dépenses : quelques kilo-octets de texte, et la seule
+# trace de ce qu'ont coûté les générations supprimées. Rien ne le régénère.
+# À DECOMMENTER si vous voulez versionner le journal des dépenses.
+# !/generations/.higgsphere-ledger.jsonl
+
+# AI
+/.impeccable
+# Budget Kie AI accordé par « kie ok N » : état local et éphémère.
+/.claude/hooks/.kie-budget*
+/.playwright-mcp
