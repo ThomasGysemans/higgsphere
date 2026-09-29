@@ -99,6 +99,21 @@ Les skills Claude Code de [.claude/skills/](.claude/skills/) s'occupent de la g�
 - [`video-loop`](.claude/skills/video-loop/SKILL.md) transforme une vidéo générée en boucle
   sans raccord. Elle tourne en local avec `ffmpeg` et ne coûte donc rien.
 
+## Utiliser un autre LLM
+
+Le mur ne dépend pas de Claude : tout ce qui écrit un média et son `.json` dans
+`generations/` s'y affiche. Seule la configuration de l'agent est propre à Claude Code :
+
+- **Instructions :** la plupart des autres agents lisent `AGENTS.md` au lieu de
+  `CLAUDE.md`. Créez un lien avec `ln -s CLAUDE.md AGENTS.md`, ou indiquez `CLAUDE.md` à
+  votre outil.
+- **Skills :** chacune est un fichier Markdown accompagné de scripts shell. Tout agent
+  capable de lancer des commandes peut les suivre : demandez-lui de lire le `SKILL.md`, ou
+  copiez le dossier là où votre outil cherche ses skills.
+- **Garde-fou des coûts :** `kie ok <crédits>` repose sur les hooks de Claude Code. Sans
+  eux, `kie-ai` refuse toute génération payante. Adaptez
+  [kie-guard.py](.claude/hooks/kie-guard.py) aux hooks de votre outil pour lever le blocage.
+
 ## Contribuer
 
 - **Ajouter un fournisseur :** écrivez une skill dans `.claude/skills/` qui se termine en

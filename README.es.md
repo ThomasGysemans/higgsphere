@@ -98,6 +98,22 @@ generación por ti:
 - [`video-loop`](.claude/skills/video-loop/SKILL.md) convierte un vídeo generado en un
   bucle sin cortes. Se ejecuta en local con `ffmpeg`, así que no cuesta nada.
 
+## Usar otro LLM
+
+El muro no depende de Claude: todo lo que escriba un medio y su `.json` en `generations/`
+aparece en él. Solo la configuración del agente es propia de Claude Code:
+
+- **Instrucciones:** la mayoría de los demás agentes leen `AGENTS.md` en lugar de
+  `CLAUDE.md`. Crea un enlace con `ln -s CLAUDE.md AGENTS.md`, o indica `CLAUDE.md` a tu
+  herramienta.
+- **Skills:** cada una es un archivo Markdown con scripts de shell. Cualquier agente capaz
+  de ejecutar comandos puede seguirlas: pídele que lea el `SKILL.md`, o copia la carpeta
+  donde tu herramienta busca sus skills.
+- **Control de costes:** `kie ok <créditos>` depende de los hooks de Claude Code. Sin
+  ellos, `kie-ai` rechaza toda generación de pago. Adapta
+  [kie-guard.py](.claude/hooks/kie-guard.py) a los hooks de tu herramienta para
+  desbloquearlo.
+
 ## Contribuir
 
 - **Añadir un proveedor:** escribe una skill en `.claude/skills/` que termine guardando el

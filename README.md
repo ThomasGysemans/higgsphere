@@ -92,6 +92,20 @@ The Claude Code skills in [.claude/skills/](.claude/skills/) handle generation f
 - [`video-loop`](.claude/skills/video-loop/SKILL.md) turns a generated video into a
   seamless loop. It runs locally with `ffmpeg`, so it costs nothing.
 
+## Using another LLM
+
+The wall doesn't depend on Claude: anything that writes a media file and its `.json` to
+`generations/` shows up. Only the agent setup is Claude Code-specific:
+
+- **Instructions:** most other agents read `AGENTS.md` instead of `CLAUDE.md`. Link it
+  with `ln -s CLAUDE.md AGENTS.md`, or point your tool at `CLAUDE.md`.
+- **Skills:** each one is a Markdown file plus shell scripts. Any agent that can run
+  commands can follow them: ask it to read the `SKILL.md`, or copy the folder to where your
+  tool looks for skills.
+- **Cost guard:** `kie ok <credits>` relies on Claude Code hooks. Without them, `kie-ai`
+  refuses every paid generation. Adapt [kie-guard.py](.claude/hooks/kie-guard.py) to your
+  tool's hooks to lift the block.
+
 ## Improving it
 
 - **Add a provider:** write a skill in `.claude/skills/` that ends by saving the media and
