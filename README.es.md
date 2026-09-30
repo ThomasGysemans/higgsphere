@@ -131,3 +131,7 @@ de código:
   llamada de red saliente. Los tipos de cambio están fijados en
   [src/lib/currency.ts](src/lib/currency.ts): actualízalos de vez en cuando.
 - Ejecuta `npm run check` antes de abrir una PR.
+
+## Licencia
+
+[MIT](LICENSE): úsalo, cópialo, modifícalo, compártelo, véndelo — sin pedir permiso.

@@ -136,3 +136,8 @@ plupart des agents de code :
   sortant. Les taux de change sont figés dans [src/lib/currency.ts](src/lib/currency.ts) :
   mettez-les à jour de temps en temps.
 - Lancez `npm run check` avant d'ouvrir une PR.
+
+## Licence
+
+[MIT](LICENSE) : utilisez-le, copiez-le, modifiez-le, partagez-le, vendez-le — sans
+demander la permission.

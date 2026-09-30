@@ -122,3 +122,7 @@ The project doesn't depend on Claude: anything that writes a media file and its 
   calls. Currency rates are fixed in [src/lib/currency.ts](src/lib/currency.ts), so update
   them from time to time.
 - Run `npm run check` before opening a PR.
+
+## License
+
+[MIT](LICENSE): use it, copy it, modify it, share it, sell it — no permission needed.
