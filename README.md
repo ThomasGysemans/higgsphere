@@ -3,7 +3,7 @@
 **English** · [Français](README.fr.md) · [Español](README.es.md)
 
 A local gallery for every image and video you generate with AI: newest first, each one next
-to the exact prompt, model and cost that produced it. This repo comes with Claude skills to
+to the exact prompt, model and cost that produced it. This repo comes with AI skills to
 optimise the generation process.
 
 ![The wall: every generation in a masonry grid, newest first](screenshots/wall.jpg)
@@ -25,6 +25,8 @@ keep the phrasings that work, and ask the LLM to improve the next attempt from w
 Requires Node.js 20.19+ (Vite 8).
 
 ```sh
+# Clone the repo first
+git clone git@github.com:ThomasGysemans/higgsphere.git
 npm install
 npm run dev        # http://localhost:5173
 ```
@@ -55,7 +57,7 @@ generations/
 }
 ```
 
-> The JSON files can include custom metadata that the LLM will set up.
+> The JSON files can include custom metadata that the LLM will set up on its own.
 
 New files show up on the wall within a second, with no reload or restart. Every field is
 optional, and subfolders are fine. The full schema is in [AGENTS.md](AGENTS.md), which
@@ -71,8 +73,7 @@ deleted, whether you delete it from the app or with `rm`. Deleting a media file 
 tile from the wall but doesn't lower the total spent. The **Spend** page (`/stats`)
 reads the ledger to show spending over time, by provider and by model.
 
-The ledger is append-only and committed to git. It's the one file in the folder that
-can't be rebuilt from the others.
+The ledger is append-only and unversioned by default.
 
 ![The Spend page: totals, timeline, providers and log](screenshots/spend.png)
 
@@ -100,7 +101,7 @@ The skills in [.agents/skills/](.agents/skills/) handle generation for you:
 
 ## Using another LLM
 
-The wall doesn't depend on Claude: anything that writes a media file and its `.json` to
+The project doesn't depend on Claude: anything that writes a media file and its `.json` to
 `generations/` shows up. The agent setup works with most coding agents out of the box:
 
 - **Instructions** live in [AGENTS.md](AGENTS.md), which Codex, Cursor, Copilot and others
@@ -109,7 +110,7 @@ The wall doesn't depend on Claude: anything that writes a media file and its `.j
   `AGENTS.md` lists them, so an agent that doesn't load skills on its own still knows when
   to read them.
 - **Budget:** `kie-ai` forbids any paid generation until you set a budget with
-  `kie ok <credits>`. It's a written rule the agent follows, not a technical block.
+  `kie ok <credits>`. It's a written rule the agent follows, not a technical block. Estimations can be wrong. They're stored in `pricing.json` so the agent doesn't have to search for the pricing details online at every session.
 
 ## Improving it
 

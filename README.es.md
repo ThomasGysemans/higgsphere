@@ -4,7 +4,7 @@
 
 Una galería local para todas las imágenes y vídeos que generas con IA: lo más reciente
 primero, cada uno junto al prompt exacto, el modelo y el coste que lo produjeron. El
-repositorio incluye skills de Claude para optimizar el proceso de generación.
+repositorio incluye skills de IA para optimizar el proceso de generación.
 
 ![El muro: todas las generaciones en una cuadrícula masonry, lo más reciente primero](screenshots/wall.es.jpg)
 
@@ -27,6 +27,8 @@ tienes.
 Requiere Node.js 20.19+ (Vite 8).
 
 ```sh
+# Primero clona el repositorio
+git clone git@github.com:ThomasGysemans/higgsphere.git
 npm install
 npm run dev        # http://localhost:5173
 ```
@@ -58,7 +60,7 @@ generations/
 ```
 
 > Los archivos JSON pueden incluir metadatos personalizados, que el LLM se encargará de
-> rellenar.
+> rellenar por su cuenta.
 
 Los archivos nuevos aparecen en el muro en menos de un segundo, sin recargar ni reiniciar.
 Todos los campos son opcionales y se admiten subcarpetas. El esquema completo está en
@@ -75,8 +77,7 @@ archivo, tanto si lo borras desde la aplicación como con `rm`. Borrar un medio 
 tesela del muro, pero no reduce el total gastado. La página **Gastos** (`/stats`) lee este
 historial para mostrar el gasto a lo largo del tiempo, por proveedor y por modelo.
 
-El historial solo admite añadidos y se versiona en git. Es el único archivo de la carpeta
-que no puede reconstruirse a partir de los demás.
+El historial solo admite añadidos y, por defecto, no se versiona.
 
 ![La página Gastos: totales, cronología, proveedores y registro](screenshots/spend.es.png)
 
@@ -105,7 +106,7 @@ Las skills de [.agents/skills/](.agents/skills/) se encargan de la generación p
 
 ## Usar otro LLM
 
-El muro no depende de Claude: todo lo que escriba un medio y su `.json` en `generations/`
+El proyecto no depende de Claude: todo lo que escriba un medio y su `.json` en `generations/`
 aparece en él. La configuración del agente funciona tal cual con la mayoría de los agentes
 de código:
 
@@ -117,7 +118,8 @@ de código:
   sabe igualmente cuándo leerlas.
 - **El presupuesto:** `kie-ai` prohíbe toda generación de pago hasta que fijas un
   presupuesto con `kie ok <créditos>`. Es una regla escrita que el agente sigue, no un
-  bloqueo técnico.
+  bloqueo técnico. Las estimaciones pueden ser erróneas. Se guardan en `pricing.json` para
+  que el agente no tenga que buscar los precios en internet en cada sesión.
 
 ## Contribuir
 

@@ -207,9 +207,11 @@ of the wall keeps the ledger up to date. What matters:
   previous size, so that a media file still visible isn't counted as deleted.
 - An unreadable line is skipped and reported, never fatal. The fold is tolerant: an
   `updated` or a `deleted` on an unknown identity opens the generation instead of failing.
-- The ledger is versioned (exception in `.gitignore`): it's the only data in the folder
-  that nothing regenerates. Deleting it only loses the history of generations **already
-  erased** — those still present re-register on the next scan.
+- The ledger is **not versioned by default**: `/generations/*` is ignored, and the
+  exception `!/generations/.higgsphere-ledger.jsonl` is commented out in `.gitignore` —
+  uncomment it to commit the ledger. It's still the only data in the folder that nothing
+  regenerates. Deleting it only loses the history of generations **already erased** —
+  those still present re-register on the next scan.
 
 ---
 

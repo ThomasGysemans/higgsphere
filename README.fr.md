@@ -4,7 +4,7 @@
 
 Une galerie locale pour toutes les images et vidéos que vous générez avec l'IA : les plus
 récentes en premier, chacune à côté du prompt exact, du modèle et du coût qui l'ont
-produite. Le dépôt fournit aussi des skills Claude pour optimiser la génération.
+produite. Le dépôt fournit aussi des skills d'IA pour optimiser la génération.
 
 ![Le mur : toutes les générations en grille masonry, les plus récentes en premier](screenshots/wall.fr.jpg)
 
@@ -27,6 +27,8 @@ suivante à partir de ce que vous avez déjà.
 Nécessite Node.js 20.19+ (Vite 8).
 
 ```sh
+# Clonez d'abord le dépôt
+git clone git@github.com:ThomasGysemans/higgsphere.git
 npm install
 npm run dev        # http://localhost:5173
 ```
@@ -57,7 +59,8 @@ generations/
 }
 ```
 
-> Les fichiers JSON peuvent contenir des métadonnées personnalisées, que le LLM renseignera.
+> Les fichiers JSON peuvent contenir des métadonnées personnalisées, que le LLM renseignera
+> de lui-même.
 
 Les nouveaux fichiers apparaissent sur le mur en moins d'une seconde, sans rechargement ni
 redémarrage. Tous les champs sont optionnels, et les sous-dossiers sont acceptés. Le
@@ -75,8 +78,7 @@ Supprimer un média retire une tuile du mur mais ne fait pas baisser le total d�
 page **Dépenses** (`/stats`) lit ce journal pour montrer les dépenses dans le temps, par
 fournisseur et par modèle.
 
-Le journal est en ajout seul et versionné dans git. C'est le seul fichier du dossier
-qu'aucun autre ne permet de reconstruire.
+Le journal est en ajout seul et n'est pas versionné par défaut.
 
 ![La page Dépenses : totaux, chronologie, fournisseurs et historique](screenshots/spend.fr.png)
 
@@ -107,7 +109,7 @@ place :
 
 ## Utiliser un autre LLM
 
-Le mur ne dépend pas de Claude : tout ce qui écrit un média et son `.json` dans
+Le projet ne dépend pas de Claude : tout ce qui écrit un média et son `.json` dans
 `generations/` s'y affiche. La configuration de l'agent fonctionne telle quelle avec la
 plupart des agents de code :
 
@@ -119,7 +121,9 @@ plupart des agents de code :
   même quand les lire.
 - **Le budget :** `kie-ai` interdit toute génération payante tant que vous n'avez pas
   fixé un budget avec `kie ok <crédits>`. C'est une règle écrite que l'agent suit, pas un
-  blocage technique.
+  blocage technique. Les estimations peuvent être fausses. Elles sont stockées dans
+  `pricing.json` pour que l'agent n'ait pas à rechercher les tarifs en ligne à chaque
+  session.
 
 ## Contribuer
 
