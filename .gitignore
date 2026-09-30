@@ -26,7 +26,7 @@ vite.config.ts.timestamp-*
 
 # Générations — médias binaires, potentiellement volumineux.
 # Supprimez ces lignes si vous voulez versionner votre galerie.
-/inspiration/*
+/references/*
 /generations/*
 !/generations/.gitkeep
 # ...sauf le journal des dépenses : quelques kilo-octets de texte, et la seule
