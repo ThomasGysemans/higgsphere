@@ -62,13 +62,37 @@
     },
     "nano-banana-pro": {
       "unit": "call",
-      "defaults": {},
+      "defaults": { "resolution": "1K" },
       "rates": [
-        { "when": { "resolution": "4k" }, "credits": 24 }
+        { "when": { "resolution": "4k" }, "credits": 24 },
+        { "when": { "resolution": "2k" }, "credits": 18 },
+        { "when": { "resolution": "1k" }, "credits": 18 }
       ],
-      "source": "not recorded",
-      "checked": "2026-08-31",
-      "notes": "Only the 4K price was recorded. Other resolutions still need to be looked up."
+      "source": "https://kie.ai/nano-banana-pro",
+      "checked": "2026-09-30",
+      "notes": "pricingDesc: 18 credits for 1K/2K, 24 for 4K, flat per call. Schema default resolution is 1K."
+    },
+    "seedream/5-pro-text-to-image": {
+      "unit": "call",
+      "defaults": { "quality": "basic" },
+      "rates": [
+        { "when": { "quality": "high" }, "credits": 14 },
+        { "when": { "quality": "basic" }, "credits": 7 }
+      ],
+      "source": "https://kie.ai/seedream-5-0-pro",
+      "checked": "2026-09-30",
+      "notes": "No resolution field: quality basic = 1K (7 cr), high = 2K (14 cr). Default is basic."
+    },
+    "seedream/5-pro-image-to-image": {
+      "unit": "call",
+      "defaults": { "quality": "basic" },
+      "rates": [
+        { "when": { "quality": "high" }, "credits": 14 },
+        { "when": { "quality": "basic" }, "credits": 7 }
+      ],
+      "source": "https://kie.ai/seedream-5-0-pro",
+      "checked": "2026-09-30",
+      "notes": "Same rates as text-to-image. Input images: first one free, then 0.5 cr each (not modeled here: add 0.5 x (n - 1) by hand)."
     }
   }
 }
